@@ -1,0 +1,35 @@
+{
+  "name": "shipnow-api",
+  "version": "5.0.0",
+  "description": "ShipNow API - logistica con Node.js, Express y MongoDB (Backend III - Coderhouse). Arquitectura por capas, mocking, manejo de errores, logging y documentacion Swagger.",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node --test test/*.test.mjs"
+  },
+  "keywords": [
+    "backend",
+    "api",
+    "logistica",
+    "coderhouse",
+    "shipnow"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@faker-js/faker": "^9.6.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.12.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
