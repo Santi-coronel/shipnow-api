@@ -3,8 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Variables obligatorias: si falta alguna, la app no debe arrancar.
-const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET'];
-
+const requiredEnvVars = ['MONGODB_URI'];
 requiredEnvVars.forEach((key) => {
   if (!process.env[key]) {
     throw new Error(
@@ -18,7 +17,6 @@ requiredEnvVars.forEach((key) => {
 const config = Object.freeze({
   port: Number(process.env.PORT) || 8080,
   mongoUri: process.env.MONGODB_URI,
-  jwtSecret: process.env.JWT_SECRET,
   nodeEnv: process.env.NODE_ENV || 'development',
   logLevel: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
 });

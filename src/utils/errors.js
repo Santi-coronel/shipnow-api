@@ -9,7 +9,6 @@ export const EErrors = Object.freeze({
   NOT_FOUND_ERROR: 4,
   RESOURCE_ALREADY_EXISTS: 5,
   INVALID_RESOURCE_PROPERTY: 6,
-  MISSING_API_KEY: 7,
 });
 
 export const ErrorDictionary = Object.freeze({
@@ -29,7 +28,6 @@ export const ErrorDictionary = Object.freeze({
   INVALID_QUANTITY: { name: 'InvalidQuantity', code: EErrors.INVALID_RESOURCE_PROPERTY, status: 400, message: 'La cantidad (qty) debe ser un numero entero positivo dentro del rango permitido' },
   MOCK_SEED_FAILED: { name: 'MockSeedFailed', code: EErrors.DATABASE_ERROR, status: 500, message: 'Fallo la carga de datos de prueba en MongoDB' },
 
-  MISSING_API_KEY: { name: 'MissingApiKey', code: EErrors.MISSING_API_KEY, status: 500, message: 'Configuracion invalida: falta API Key / JWT_SECRET' },
   INVALID_ID: { name: 'InvalidId', code: EErrors.INVALID_TYPES_ERROR, status: 400, message: 'El ID recibido no es valido' },
   INVALID_JSON: { name: 'InvalidJson', code: EErrors.INVALID_TYPES_ERROR, status: 400, message: 'El cuerpo de la peticion no es un JSON valido' },
   ROUTE_NOT_FOUND: { name: 'RouteNotFound', code: EErrors.ROUTING_ERROR, status: 404, message: 'Ruta no encontrada' },

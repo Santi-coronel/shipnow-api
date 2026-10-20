@@ -8,13 +8,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-secret';
 process.env.MONGODB_URI = 'mongodb://localhost:27017/shipnow-test';
 
 test('config: carga valores validados', async () => {
   const { default: config } = await import('../src/config/index.js');
   assert.equal(config.nodeEnv, 'test');
-  assert.equal(config.jwtSecret, 'test-secret');
+  assert.equal(config.mongoUri, 'mongodb://localhost:27017/shipnow-test');
 });
 
 test('config: explota si falta una variable critica', async () => {

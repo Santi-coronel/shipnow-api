@@ -23,12 +23,12 @@ El Repository se mantiene "tonto" a propósito: solo sabe hacer `find`, `create`
 
 ```bash
 npm install
-cp .env.example .env   # completar MONGODB_URI y JWT_SECRET
+cp .env.example .env   # completar MONGODB_URI
 npm run dev             # desarrollo, con nodemon
 npm start                # producción
 ```
 
-Si falta `MONGODB_URI` o `JWT_SECRET`, la app lanza un error descriptivo y no arranca (ver `src/config/index.js`).
+Si falta `MONGODB_URI`, la app lanza un error descriptivo...
 
 ## Variables de entorno
 
@@ -36,13 +36,12 @@ Si falta `MONGODB_URI` o `JWT_SECRET`, la app lanza un error descriptivo y no ar
 | --- | --- | --- |
 | `PORT` | No (default 8080) | Puerto del servidor |
 | `MONGODB_URI` | **Sí** | Conexión a MongoDB |
-| `JWT_SECRET` | **Sí** | Secreto usado como API key interna |
 | `NODE_ENV` | No | `development` \| `test` \| `production` |
 | `LOG_LEVEL` | No | Nivel mínimo de log (`debug` en dev, `info` en prod) |
 
 ## Pre-entrega 1 — Estructura profesional
 
-- `src/config/index.js`: valida `MONGODB_URI` y `JWT_SECRET` al arranque.
+- `src/config/index.js`: valida `MONGODB_URI` al arranque.
 - `src/constants/index.js`: `USER_ROLES`, `ORDER_STATUS`, `DELIVERY_STATUS`, `DELIVERY_PRIORITY`, todos con `Object.freeze`.
 - Entidades **Users**, **Orders** y **Deliveries** refactorizadas en las 3 capas.
 
