@@ -12,13 +12,24 @@ const router = Router();
  * /health:
  *   get:
  *     tags: [Health]
- *     summary: Chequeo de disponibilidad de la API
+ *     summary: Comprueba la disponibilidad de la API
+ *     description: Devuelve una respuesta simple para confirmar que el servidor está funcionando.
  *     responses:
  *       200:
- *         description: La API esta funcionando
+ *         description: La API está funcionando correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MessageResponse'
+ *             example:
+ *               status: success
+ *               message: ShipNow API funcionando correctamente
  */
 router.get('/health', (req, res) => {
-  res.json({ status: 'success', message: 'ShipNow API funcionando correctamente' });
+  res.json({
+    status: 'success',
+    message: 'ShipNow API funcionando correctamente',
+  });
 });
 
 router.use('/users', usersRouter);
