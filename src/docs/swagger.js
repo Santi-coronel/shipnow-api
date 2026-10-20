@@ -460,6 +460,93 @@ const options = {
           },
         },
 
+        MockUser: {
+          type: 'object',
+          required: ['firstName', 'lastName', 'email', 'password', 'role', 'isAvailable'],
+          properties: {
+            firstName: { type: 'string', example: 'Ana' },
+            lastName: { type: 'string', example: 'Perez' },
+            email: {
+              type: 'string',
+              format: 'email',
+              example: 'ana.perez@test.com',
+            },
+            password: {
+              type: 'string',
+              example: 'Mock1234!',
+              description: 'Clave de prueba; solo se cifra al insertar el usuario',
+            },
+            role: {
+              type: 'string',
+              enum: ['customer', 'driver', 'store'],
+            },
+            isAvailable: { type: 'boolean', example: true },
+          },
+        },
+
+        MockOrder: {
+          type: 'object',
+          required: ['customer', 'items', 'deliveryAddress', 'total', 'status', 'priority'],
+          properties: {
+            customer: {
+              type: 'string',
+              example: '6710f3a1c2a4b5d6e7f80901',
+            },
+            items: {
+              type: 'array',
+              minItems: 1,
+              items: { $ref: '#/components/schemas/OrderItem' },
+            },
+            deliveryAddress: {
+              type: 'string',
+              example: 'Av. Siempre Viva 742',
+            },
+            total: { type: 'number', format: 'float', minimum: 0 },
+            status: {
+              type: 'string',
+              enum: ['created', 'assigned', 'picked_up', 'in_transit', 'delivered', 'cancelled'],
+            },
+            priority: {
+              type: 'string',
+              enum: ['low', 'normal', 'high'],
+            },
+          },
+        },
+
+        MockDelivery: {
+          type: 'object',
+          required: ['order', 'status', 'priority'],
+          properties: {
+            order: {
+              type: 'string',
+              example: '6710f3a1c2a4b5d6e7f80902',
+            },
+            driver: {
+              type: 'string',
+              nullable: true,
+              example: '6710f3a1c2a4b5d6e7f80904',
+            },
+            status: {
+              type: 'string',
+              enum: ['pending', 'assigned', 'in_transit', 'delivered'],
+            },
+            priority: {
+              type: 'string',
+              enum: ['low', 'normal', 'high'],
+            },
+            assignedAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+            },
+            deliveredAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+            },
+          },
+        },
+
         MockSeedRequest: {
           type: 'object',
           additionalProperties: false,
@@ -662,6 +749,51 @@ const options = {
                   items: {
                     $ref: '#/components/schemas/Delivery',
                   },
+                },
+              },
+            },
+          ],
+        },
+
+        MockUsersResponse: {
+          allOf: [
+            { $ref: '#/components/schemas/SuccessResponse' },
+            {
+              type: 'object',
+              properties: {
+                payload: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/MockUser' },
+                },
+              },
+            },
+          ],
+        },
+
+        MockOrdersResponse: {
+          allOf: [
+            { $ref: '#/components/schemas/SuccessResponse' },
+            {
+              type: 'object',
+              properties: {
+                payload: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/MockOrder' },
+                },
+              },
+            },
+          ],
+        },
+
+        MockDeliveriesResponse: {
+          allOf: [
+            { $ref: '#/components/schemas/SuccessResponse' },
+            {
+              type: 'object',
+              properties: {
+                payload: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/MockDelivery' },
                 },
               },
             },

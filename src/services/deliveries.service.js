@@ -42,14 +42,24 @@ class DeliveriesService {
   }
 
   async update(id, deliveryData) {
-    if (deliveryData.status && !Object.values(DELIVERY_STATUS).includes(deliveryData.status)) {
-      throw createError(ErrorDictionary.INVALID_DELIVERY_STATUS);
-    }
-    if (deliveryData.status === DELIVERY_STATUS.DELIVERED) {
-      deliveryData.deliveredAt = new Date();
+    const updateData = { ...deliveryData };
+
+    if (updateData.driver) {
+      const driver = await usersRepo.findById(updateData.driver);
+      if (!driver) throw createError(ErrorDictionary.USER_NOT_FOUND);
+      if (driver.role !== USER_ROLES.DRIVER) {
+        throw createError(ErrorDictionary.DRIVER_NOT_VALID);
+      }
     }
 
-    const updatedDelivery = await deliveriesRepo.update(id, deliveryData);
+    if (updateData.status && !Object.values(DELIVERY_STATUS).includes(updateData.status)) {
+      throw createError(ErrorDictionary.INVALID_DELIVERY_STATUS);
+    }
+    if (updateData.status === DELIVERY_STATUS.DELIVERED) {
+      updateData.deliveredAt = new Date();
+    }
+
+    const updatedDelivery = await deliveriesRepo.update(id, updateData);
     if (!updatedDelivery) throw createError(ErrorDictionary.DELIVERY_NOT_FOUND);
     return updatedDelivery;
   }

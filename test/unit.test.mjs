@@ -216,6 +216,90 @@ test('users service: cifra una contraseña actualizada', async () => {
   }
 });
 
+test('users service: normaliza el email antes de buscar duplicados', async () => {
+  const { default: usersService } = await import(
+    '../src/services/users.service.js'
+  );
+  const { default: usersRepo } = await import(
+    '../src/repositories/users.repo.js'
+  );
+
+  const originalFindByEmail = usersRepo.findByEmail;
+  const originalCreate = usersRepo.create;
+  let searchedEmail;
+  let createdUser;
+
+  usersRepo.findByEmail = async (email) => {
+    searchedEmail = email;
+    return null;
+  };
+  usersRepo.create = async (userData) => {
+    createdUser = userData;
+    return {
+      ...userData,
+      toObject: () => userData,
+    };
+  };
+
+  try {
+    await usersService.create({
+      firstName: 'Ana',
+      lastName: 'Perez',
+      email: '  ANA@TEST.COM  ',
+      password: 'Clave1234',
+      role: 'customer',
+    });
+
+    assert.equal(searchedEmail, 'ana@test.com');
+    assert.equal(createdUser.email, 'ana@test.com');
+  } finally {
+    usersRepo.findByEmail = originalFindByEmail;
+    usersRepo.create = originalCreate;
+  }
+});
+
+test('error handler: oculta detalles de errores internos inesperados', async () => {
+  const { errorHandler } = await import(
+    '../src/middlewares/errorHandler.js'
+  );
+  const { default: logger } = await import('../src/utils/logger.js');
+
+  const originalError = logger.error;
+  let responseStatus;
+  let responseBody;
+
+  logger.error = () => {};
+
+  const res = {
+    status(status) {
+      responseStatus = status;
+      return this;
+    },
+    json(body) {
+      responseBody = body;
+      return this;
+    },
+  };
+
+  try {
+    errorHandler(
+      new Error('mongodb://usuario:clave@servidor/shipnow'),
+      { method: 'GET', originalUrl: '/api/users' },
+      res,
+      () => {}
+    );
+
+    assert.equal(responseStatus, 500);
+    assert.deepEqual(responseBody.error, {
+      name: 'InternalError',
+      code: 0,
+      message: 'Error interno del servidor',
+    });
+  } finally {
+    logger.error = originalError;
+  }
+});
+
 test('orders service: recalcula el total al actualizar los items', async () => {
   const { default: ordersService } = await import(
     '../src/services/orders.service.js'
@@ -281,6 +365,81 @@ test('orders service: rechaza una lista de items vacia al actualizar', async () 
     );
   } finally {
     ordersRepo.update = originalUpdate;
+  }
+});
+
+test('deliveries service: rechaza asignar un usuario que no es driver', async () => {
+  const { default: deliveriesService } = await import(
+    '../src/services/deliveries.service.js'
+  );
+  const { default: deliveriesRepo } = await import(
+    '../src/repositories/deliveries.repo.js'
+  );
+  const { default: usersRepo } = await import(
+    '../src/repositories/users.repo.js'
+  );
+
+  const originalFindById = usersRepo.findById;
+  const originalUpdate = deliveriesRepo.update;
+
+  usersRepo.findById = async () => ({
+    _id: 'customer-id',
+    role: 'customer',
+  });
+  deliveriesRepo.update = async () => ({ _id: 'delivery-id' });
+
+  try {
+    await assert.rejects(
+      () => deliveriesService.update('delivery-id', { driver: 'customer-id' }),
+      (error) => {
+        assert.equal(error.name, 'DriverNotValid');
+        assert.equal(error.status, 400);
+        return true;
+      }
+    );
+  } finally {
+    usersRepo.findById = originalFindById;
+    deliveriesRepo.update = originalUpdate;
+  }
+});
+
+test('repositories: ejecutan validadores al actualizar', async () => {
+  const { default: usersRepo } = await import(
+    '../src/repositories/users.repo.js'
+  );
+  const { default: ordersRepo } = await import(
+    '../src/repositories/orders.repo.js'
+  );
+  const { default: deliveriesRepo } = await import(
+    '../src/repositories/deliveries.repo.js'
+  );
+  const { default: User } = await import('../src/models/user.model.js');
+  const { default: Order } = await import('../src/models/order.model.js');
+  const { default: Delivery } = await import('../src/models/delivery.model.js');
+
+  const cases = [
+    { repo: usersRepo, model: User },
+    { repo: ordersRepo, model: Order },
+    { repo: deliveriesRepo, model: Delivery },
+  ];
+
+  for (const { repo, model } of cases) {
+    const originalFindByIdAndUpdate = model.findByIdAndUpdate;
+    let receivedOptions;
+
+    model.findByIdAndUpdate = (id, data, options) => {
+      receivedOptions = options;
+      return {
+        select: () => ({ _id: id, ...data }),
+      };
+    };
+
+    try {
+      await repo.update('resource-id', { priority: 'high' });
+      assert.equal(receivedOptions.runValidators, true);
+    } finally {
+      model.findByIdAndUpdate = originalFindByIdAndUpdate;
+    }
   }
 });
 
@@ -365,6 +524,31 @@ test('swagger: incluye respuestas tipadas para las entidades', async () => {
     usersPayload.items.$ref,
     '#/components/schemas/User'
   );
+});
+
+test('swagger: los mocks usan schemas acordes a datos no persistidos', async () => {
+  const { default: swaggerSpec } = await import(
+    '../src/docs/swagger.js'
+  );
+
+  const expectedResponses = {
+    '/mocks/users': 'MockUsersResponse',
+    '/mocks/orders': 'MockOrdersResponse',
+    '/mocks/deliveries': 'MockDeliveriesResponse',
+  };
+
+  for (const [path, schemaName] of Object.entries(expectedResponses)) {
+    assert.ok(
+      swaggerSpec.components.schemas[schemaName],
+      `Falta el schema ${schemaName}`
+    );
+
+    assert.equal(
+      swaggerSpec.paths[path].get.responses[200].content['application/json']
+        .schema.$ref,
+      `#/components/schemas/${schemaName}`
+    );
+  }
 });
 
 test('swagger: documenta todas las operaciones y sus respuestas', async () => {

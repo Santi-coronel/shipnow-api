@@ -27,7 +27,7 @@ const router = Router();
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/UsersResponse'
+ *               $ref: '#/components/schemas/MockUsersResponse'
  *       400:
  *         description: La cantidad no es un entero válido entre 1 y 100
  *         content:
@@ -61,7 +61,7 @@ router.get('/users', mocksController.getUsers);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/OrdersResponse'
+ *               $ref: '#/components/schemas/MockOrdersResponse'
  *       400:
  *         description: Cantidad inválida o ausencia de usuarios en MongoDB
  *         content:
@@ -101,7 +101,7 @@ router.get('/orders', mocksController.getOrders);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/DeliveriesResponse'
+ *               $ref: '#/components/schemas/MockDeliveriesResponse'
  *       400:
  *         description: Cantidad inválida o ausencia de pedidos en MongoDB
  *         content:

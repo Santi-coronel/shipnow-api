@@ -14,7 +14,10 @@ class DeliveriesRepository {
   }
 
   async update(id, deliveryData) {
-    return Delivery.findByIdAndUpdate(id, deliveryData, { new: true });
+    return Delivery.findByIdAndUpdate(id, deliveryData, {
+      new: true,
+      runValidators: true,
+    });
   }
 
   async delete(id) {

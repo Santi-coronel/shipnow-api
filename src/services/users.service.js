@@ -23,11 +23,16 @@ class UsersService {
       throw createError(ErrorDictionary.INVALID_ROLE);
     }
 
-    const existingUser = await usersRepo.findByEmail(userData.email);
+    const normalizedEmail = userData.email.trim().toLowerCase();
+    const existingUser = await usersRepo.findByEmail(normalizedEmail);
     if (existingUser) throw createError(ErrorDictionary.USER_ALREADY_EXISTS);
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const newUser = await usersRepo.create({ ...userData, password: hashedPassword });
+    const newUser = await usersRepo.create({
+      ...userData,
+      email: normalizedEmail,
+      password: hashedPassword,
+    });
     logger.info(`Usuario creado: ${newUser.email} (rol: ${newUser.role})`);
 
     const { password, ...safeUser } = newUser.toObject();
@@ -35,28 +40,28 @@ class UsersService {
   }
 
   async update(id, userData) {
-  if (userData.role === USER_ROLES.ADMIN) {
-    throw createError(ErrorDictionary.ADMIN_CREATION_FORBIDDEN);
+    if (userData.role === USER_ROLES.ADMIN) {
+      throw createError(ErrorDictionary.ADMIN_CREATION_FORBIDDEN);
+    }
+
+    if (userData.role && !Object.values(USER_ROLES).includes(userData.role)) {
+      throw createError(ErrorDictionary.INVALID_ROLE);
+    }
+
+    const updateData = { ...userData };
+
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+
+    const updatedUser = await usersRepo.update(id, updateData);
+
+    if (!updatedUser) {
+      throw createError(ErrorDictionary.USER_NOT_FOUND);
+    }
+
+    return updatedUser;
   }
-
-  if (userData.role && !Object.values(USER_ROLES).includes(userData.role)) {
-    throw createError(ErrorDictionary.INVALID_ROLE);
-  }
-
-  const updateData = { ...userData };
-
-  if (updateData.password) {
-    updateData.password = await bcrypt.hash(updateData.password, 10);
-  }
-
-  const updatedUser = await usersRepo.update(id, updateData);
-
-  if (!updatedUser) {
-    throw createError(ErrorDictionary.USER_NOT_FOUND);
-  }
-
-  return updatedUser;
-}
 
   async delete(id) {
     const deletedUser = await usersRepo.delete(id);

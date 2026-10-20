@@ -20,7 +20,10 @@ class UsersRepository {
   }
 
   async update(id, userData) {
-    return User.findByIdAndUpdate(id, userData, { new: true }).select('-password');
+    return User.findByIdAndUpdate(id, userData, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
   }
 
   async delete(id) {

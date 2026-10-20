@@ -19,6 +19,9 @@ export const errorHandler = (err, req, res, next) => {
 
   const status = error.status || 500;
   const isUnexpected = status >= 500;
+  const responseError = error.status
+    ? error
+    : ErrorDictionary.INTERNAL_ERROR;
 
   const logMessage = `${req.method} ${req.originalUrl} -> ${error.name || 'Error'}: ${error.message}`;
 
@@ -33,9 +36,9 @@ export const errorHandler = (err, req, res, next) => {
   res.status(status).json({
     status: 'error',
     error: {
-      name: error.name || 'InternalError',
-      code: error.code ?? 0,
-      message: error.message || ErrorDictionary.INTERNAL_ERROR.message,
+      name: responseError.name,
+      code: responseError.code,
+      message: responseError.message,
     },
   });
 };

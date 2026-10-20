@@ -14,7 +14,10 @@ class OrdersRepository {
   }
 
   async update(id, orderData) {
-    return Order.findByIdAndUpdate(id, orderData, { new: true });
+    return Order.findByIdAndUpdate(id, orderData, {
+      new: true,
+      runValidators: true,
+    });
   }
 
   async delete(id) {
