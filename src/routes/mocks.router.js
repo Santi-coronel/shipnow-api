@@ -8,19 +8,32 @@ const router = Router();
  * /mocks/users:
  *   get:
  *     tags: [Mocks]
- *     summary: Devuelve usuarios simulados sin guardarlos en la base
+ *     summary: Genera usuarios simulados
+ *     description: Devuelve usuarios simulados sin guardarlos en MongoDB.
  *     parameters:
  *       - in: query
  *         name: qty
- *         schema: { type: integer, default: 5 }
+ *         required: false
+ *         description: Cantidad de usuarios que se deben generar
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 5
+ *         example: 10
  *     responses:
  *       200:
- *         description: Usuarios simulados
- *       400:
- *         description: qty invalido (no entero, negativo o excede el maximo)
+ *         description: Usuarios simulados generados correctamente
  *         content:
  *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ *             schema:
+ *               $ref: '#/components/schemas/UsersResponse'
+ *       400:
+ *         description: La cantidad no es un entero válido entre 1 y 100
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/users', mocksController.getUsers);
 
@@ -29,19 +42,38 @@ router.get('/users', mocksController.getUsers);
  * /mocks/orders:
  *   get:
  *     tags: [Mocks]
- *     summary: Devuelve pedidos simulados (relacionados a usuarios existentes) sin guardarlos
+ *     summary: Genera pedidos simulados
+ *     description: Genera pedidos relacionados con usuarios existentes sin guardarlos en MongoDB.
  *     parameters:
  *       - in: query
  *         name: qty
- *         schema: { type: integer, default: 5 }
+ *         required: false
+ *         description: Cantidad de pedidos que se deben generar
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 5
+ *         example: 10
  *     responses:
  *       200:
- *         description: Pedidos simulados
- *       400:
- *         description: qty invalido o no hay usuarios cargados
+ *         description: Pedidos simulados generados correctamente
  *         content:
  *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ *             schema:
+ *               $ref: '#/components/schemas/OrdersResponse'
+ *       400:
+ *         description: Cantidad inválida o ausencia de usuarios en MongoDB
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Error interno al consultar MongoDB
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/orders', mocksController.getOrders);
 
@@ -50,19 +82,38 @@ router.get('/orders', mocksController.getOrders);
  * /mocks/deliveries:
  *   get:
  *     tags: [Mocks]
- *     summary: Devuelve entregas simuladas (relacionadas a pedidos/repartidores existentes) sin guardarlas
+ *     summary: Genera entregas simuladas
+ *     description: Genera entregas relacionadas con pedidos y repartidores existentes sin guardarlas.
  *     parameters:
  *       - in: query
  *         name: qty
- *         schema: { type: integer, default: 5 }
+ *         required: false
+ *         description: Cantidad de entregas que se deben generar
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 5
+ *         example: 10
  *     responses:
  *       200:
- *         description: Entregas simuladas
- *       400:
- *         description: qty invalido o no hay pedidos cargados
+ *         description: Entregas simuladas generadas correctamente
  *         content:
  *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ *             schema:
+ *               $ref: '#/components/schemas/DeliveriesResponse'
+ *       400:
+ *         description: Cantidad inválida o ausencia de pedidos en MongoDB
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Error interno al consultar MongoDB
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/deliveries', mocksController.getDeliveries);
 
@@ -71,24 +122,41 @@ router.get('/deliveries', mocksController.getDeliveries);
  * /mocks/users/seed:
  *   post:
  *     tags: [Mocks]
- *     summary: Genera e inserta usuarios de prueba en MongoDB
- *     parameters:
- *       - in: query
- *         name: qty
- *         schema: { type: integer, default: 5 }
+ *     summary: Inserta usuarios simulados
+ *     description: Genera usuarios de prueba, cifra sus contraseñas y los guarda en MongoDB.
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/MockSeedRequest'
+ *           example:
+ *             qty: 10
  *     responses:
  *       200:
- *         description: "Ejemplo: { insertados: 10, coleccion: 'usuarios' }"
+ *         description: Usuarios simulados insertados correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: success
+ *               payload:
+ *                 insertados: 10
+ *                 coleccion: usuarios
+ *                 usuarios: []
  *       400:
- *         description: qty invalido
+ *         description: La cantidad no es un entero válido entre 1 y 100
  *         content:
  *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Fallo la carga en MongoDB
+ *         description: Falló la inserción de usuarios en MongoDB
  *         content:
  *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/users/seed', mocksController.seedUsers);
 
@@ -97,16 +165,41 @@ router.post('/users/seed', mocksController.seedUsers);
  * /mocks/orders/seed:
  *   post:
  *     tags: [Mocks]
- *     summary: Genera e inserta pedidos de prueba en MongoDB (requiere usuarios existentes)
- *     parameters:
- *       - in: query
- *         name: qty
- *         schema: { type: integer, default: 5 }
+ *     summary: Inserta pedidos simulados
+ *     description: Genera pedidos asociados a usuarios existentes y los guarda en MongoDB.
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/MockSeedRequest'
+ *           example:
+ *             qty: 10
  *     responses:
  *       200:
- *         description: Pedidos insertados
+ *         description: Pedidos simulados insertados correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: success
+ *               payload:
+ *                 insertados: 10
+ *                 coleccion: pedidos
+ *                 pedidos: []
  *       400:
- *         description: qty invalido o no hay usuarios cargados
+ *         description: Cantidad inválida o ausencia de usuarios en MongoDB
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Falló la inserción de pedidos en MongoDB
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/orders/seed', mocksController.seedOrders);
 
@@ -115,16 +208,41 @@ router.post('/orders/seed', mocksController.seedOrders);
  * /mocks/deliveries/seed:
  *   post:
  *     tags: [Mocks]
- *     summary: Genera e inserta entregas de prueba en MongoDB (requiere pedidos existentes)
- *     parameters:
- *       - in: query
- *         name: qty
- *         schema: { type: integer, default: 5 }
+ *     summary: Inserta entregas simuladas
+ *     description: Genera entregas asociadas a pedidos existentes y las guarda en MongoDB.
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/MockSeedRequest'
+ *           example:
+ *             qty: 10
  *     responses:
  *       200:
- *         description: Entregas insertadas
+ *         description: Entregas simuladas insertadas correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: success
+ *               payload:
+ *                 insertados: 10
+ *                 coleccion: entregas
+ *                 entregas: []
  *       400:
- *         description: qty invalido o no hay pedidos cargados
+ *         description: Cantidad inválida o ausencia de pedidos en MongoDB
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Falló la inserción de entregas en MongoDB
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/deliveries/seed', mocksController.seedDeliveries);
 
@@ -133,22 +251,43 @@ router.post('/deliveries/seed', mocksController.seedDeliveries);
  * /mocks/seed/all:
  *   post:
  *     tags: [Mocks]
- *     summary: Siembra usuarios, pedidos y entregas en cascada, respetando relaciones
- *     parameters:
- *       - in: query
- *         name: usersQty
- *         schema: { type: integer, default: 5 }
- *       - in: query
- *         name: ordersQty
- *         schema: { type: integer, default: 5 }
- *       - in: query
- *         name: deliveriesQty
- *         schema: { type: integer, default: 5 }
+ *     summary: Inserta todos los datos simulados
+ *     description: Genera e inserta usuarios, pedidos y entregas en ese orden para conservar sus relaciones.
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/MockSeedAllRequest'
+ *           example:
+ *             usersQty: 10
+ *             ordersQty: 8
+ *             deliveriesQty: 5
  *     responses:
  *       200:
- *         description: "Ejemplo: { usuarios: 5, pedidos: 5, entregas: 5 }"
+ *         description: Datos simulados insertados correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: success
+ *               payload:
+ *                 usuarios: 10
+ *                 pedidos: 8
+ *                 entregas: 5
  *       400:
- *         description: Alguna cantidad invalida
+ *         description: Alguna cantidad es inválida o faltan datos relacionados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Falló alguna inserción en MongoDB
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/seed/all', mocksController.seedAll);
 
