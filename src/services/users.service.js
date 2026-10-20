@@ -35,13 +35,28 @@ class UsersService {
   }
 
   async update(id, userData) {
-    if (userData.role && !Object.values(USER_ROLES).includes(userData.role)) {
-      throw createError(ErrorDictionary.INVALID_ROLE);
-    }
-    const updatedUser = await usersRepo.update(id, userData);
-    if (!updatedUser) throw createError(ErrorDictionary.USER_NOT_FOUND);
-    return updatedUser;
+  if (userData.role === USER_ROLES.ADMIN) {
+    throw createError(ErrorDictionary.ADMIN_CREATION_FORBIDDEN);
   }
+
+  if (userData.role && !Object.values(USER_ROLES).includes(userData.role)) {
+    throw createError(ErrorDictionary.INVALID_ROLE);
+  }
+
+  const updateData = { ...userData };
+
+  if (updateData.password) {
+    updateData.password = await bcrypt.hash(updateData.password, 10);
+  }
+
+  const updatedUser = await usersRepo.update(id, updateData);
+
+  if (!updatedUser) {
+    throw createError(ErrorDictionary.USER_NOT_FOUND);
+  }
+
+  return updatedUser;
+}
 
   async delete(id) {
     const deletedUser = await usersRepo.delete(id);

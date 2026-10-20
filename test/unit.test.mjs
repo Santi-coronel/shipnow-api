@@ -90,6 +90,53 @@ test('mocks service: rechaza qty invalido sin tocar la base', async () => {
   assert.equal(users.length, 4);
 });
 
+test('users service: no permite asignar el rol admin al actualizar', async () => {
+  const { default: usersService } = await import('../src/services/users.service.js');
+  const { default: usersRepo } = await import('../src/repositories/users.repo.js');
+
+  const originalUpdate = usersRepo.update;
+  usersRepo.update = async () => ({});
+
+  try {
+    await assert.rejects(
+      () => usersService.update('user-id', { role: 'admin' }),
+      (error) => {
+        assert.equal(error.name, 'AdminCreationForbidden');
+        assert.equal(error.status, 403);
+        return true;
+      }
+    );
+  } finally {
+    usersRepo.update = originalUpdate;
+  }
+});
+
+test('users service: cifra una contraseña actualizada', async () => {
+  const { default: usersService } = await import('../src/services/users.service.js');
+  const { default: usersRepo } = await import('../src/repositories/users.repo.js');
+  const { default: bcrypt } = await import('bcrypt');
+
+  const originalUpdate = usersRepo.update;
+  let receivedData;
+
+  usersRepo.update = async (id, userData) => {
+    receivedData = userData;
+    return { _id: id, ...userData };
+  };
+
+  try {
+    await usersService.update('user-id', { password: 'NuevaClave123' });
+
+    assert.notEqual(receivedData.password, 'NuevaClave123');
+    assert.equal(
+      await bcrypt.compare('NuevaClave123', receivedData.password),
+      true
+    );
+  } finally {
+    usersRepo.update = originalUpdate;
+  }
+});
+
 test('swagger: el spec se genera con los tags esperados', async () => {
   const { default: swaggerSpec } = await import('../src/docs/swagger.js');
   const tagNames = swaggerSpec.tags.map((t) => t.name);
