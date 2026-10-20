@@ -39,17 +39,35 @@ class OrdersService {
   }
 
   async update(id, orderData) {
-    if (orderData.status && !Object.values(ORDER_STATUS).includes(orderData.status)) {
-      throw createError(ErrorDictionary.INVALID_ORDER_STATUS);
-    }
-    const updatedOrder = await ordersRepo.update(id, orderData);
-    if (!updatedOrder) throw createError(ErrorDictionary.ORDER_NOT_FOUND);
-
-    if (orderData.status === ORDER_STATUS.CANCELLED) {
-      logger.warning(`Pedido #${id} cancelado`);
-    }
-    return updatedOrder;
+  if (orderData.status && !Object.values(ORDER_STATUS).includes(orderData.status)) {
+    throw createError(ErrorDictionary.INVALID_ORDER_STATUS);
   }
+
+  const updateData = { ...orderData };
+
+  if (Object.prototype.hasOwnProperty.call(updateData, 'items')) {
+    if (!Array.isArray(updateData.items) || updateData.items.length === 0) {
+      throw createError(ErrorDictionary.INVALID_ORDER_ITEMS);
+    }
+
+    updateData.total = updateData.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+  }
+
+  const updatedOrder = await ordersRepo.update(id, updateData);
+
+  if (!updatedOrder) {
+    throw createError(ErrorDictionary.ORDER_NOT_FOUND);
+  }
+
+  if (updateData.status === ORDER_STATUS.CANCELLED) {
+    logger.warning(`Pedido #${id} cancelado`);
+  }
+
+  return updatedOrder;
+}
 
   async delete(id) {
     const deletedOrder = await ordersRepo.delete(id);

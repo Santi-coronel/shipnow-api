@@ -111,6 +111,8 @@ test('users service: no permite asignar el rol admin al actualizar', async () =>
   }
 });
 
+
+
 test('users service: cifra una contraseña actualizada', async () => {
   const { default: usersService } = await import('../src/services/users.service.js');
   const { default: usersRepo } = await import('../src/repositories/users.repo.js');
@@ -134,6 +136,54 @@ test('users service: cifra una contraseña actualizada', async () => {
     );
   } finally {
     usersRepo.update = originalUpdate;
+  }
+});
+
+test('orders service: recalcula el total al actualizar los items', async () => {
+  const { default: ordersService } = await import('../src/services/orders.service.js');
+  const { default: ordersRepo } = await import('../src/repositories/orders.repo.js');
+
+  const originalUpdate = ordersRepo.update;
+  let receivedData;
+
+  ordersRepo.update = async (id, orderData) => {
+    receivedData = orderData;
+    return { _id: id, ...orderData };
+  };
+
+  try {
+    const updatedOrder = await ordersService.update('order-id', {
+      items: [
+        { name: 'Producto A', quantity: 2, price: 100 },
+        { name: 'Producto B', quantity: 3, price: 50 },
+      ],
+    });
+
+    assert.equal(receivedData.total, 350);
+    assert.equal(updatedOrder.total, 350);
+  } finally {
+    ordersRepo.update = originalUpdate;
+  }
+});
+
+test('orders service: rechaza una lista de items vacia al actualizar', async () => {
+  const { default: ordersService } = await import('../src/services/orders.service.js');
+  const { default: ordersRepo } = await import('../src/repositories/orders.repo.js');
+
+  const originalUpdate = ordersRepo.update;
+  ordersRepo.update = async () => ({});
+
+  try {
+    await assert.rejects(
+      () => ordersService.update('order-id', { items: [] }),
+      (error) => {
+        assert.equal(error.name, 'InvalidOrderItems');
+        assert.equal(error.status, 400);
+        return true;
+      }
+    );
+  } finally {
+    ordersRepo.update = originalUpdate;
   }
 });
 
