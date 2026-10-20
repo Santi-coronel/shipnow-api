@@ -27,7 +27,225 @@ const options = {
       { name: 'Logger', description: 'Endpoint de validacion del sistema de logs (no es logica de negocio)' },
     ],
     components: {
-      schemas: {
+      schemas: { CreateUserRequest: {
+  type: 'object',
+  required: ['firstName', 'lastName', 'email', 'password'],
+  additionalProperties: false,
+  properties: {
+    firstName: {
+      type: 'string',
+      example: 'Ana',
+      description: 'Nombre del usuario',
+    },
+    lastName: {
+      type: 'string',
+      example: 'Pérez',
+      description: 'Apellido del usuario',
+    },
+    email: {
+      type: 'string',
+      format: 'email',
+      example: 'ana.perez@test.com',
+    },
+    password: {
+      type: 'string',
+      minLength: 8,
+      example: 'ClaveSegura123',
+    },
+    role: {
+      type: 'string',
+      enum: ['customer', 'driver', 'store'],
+      default: 'customer',
+    },
+  },
+},
+
+UpdateUserRequest: {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    firstName: { type: 'string', example: 'Ana' },
+    lastName: { type: 'string', example: 'Pérez' },
+    email: {
+      type: 'string',
+      format: 'email',
+      example: 'ana.actualizada@test.com',
+    },
+    password: {
+      type: 'string',
+      minLength: 8,
+      example: 'NuevaClave123',
+    },
+    role: {
+      type: 'string',
+      enum: ['customer', 'driver', 'store'],
+    },
+    isAvailable: {
+      type: 'boolean',
+      example: true,
+    },
+  },
+},
+
+CreateOrderRequest: {
+  type: 'object',
+  required: ['customer', 'items', 'deliveryAddress'],
+  additionalProperties: false,
+  properties: {
+    customer: {
+      type: 'string',
+      example: '6710f3a1c2a4b5d6e7f80901',
+      description: 'ID del usuario que realiza el pedido',
+    },
+    items: {
+      type: 'array',
+      minItems: 1,
+      items: { $ref: '#/components/schemas/OrderItem' },
+    },
+    deliveryAddress: {
+      type: 'string',
+      example: 'Av. Siempre Viva 742',
+    },
+    priority: {
+      type: 'string',
+      enum: ['low', 'normal', 'high'],
+      default: 'normal',
+    },
+  },
+},
+
+UpdateOrderRequest: {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    items: {
+      type: 'array',
+      minItems: 1,
+      items: { $ref: '#/components/schemas/OrderItem' },
+    },
+    deliveryAddress: {
+      type: 'string',
+      example: 'Av. Siempre Viva 742',
+    },
+    status: {
+      type: 'string',
+      enum: [
+        'created',
+        'assigned',
+        'picked_up',
+        'in_transit',
+        'delivered',
+        'cancelled',
+      ],
+    },
+    priority: {
+      type: 'string',
+      enum: ['low', 'normal', 'high'],
+    },
+  },
+},
+
+CreateDeliveryRequest: {
+  type: 'object',
+  required: ['order'],
+  additionalProperties: false,
+  properties: {
+    order: {
+      type: 'string',
+      example: '6710f3a1c2a4b5d6e7f80902',
+      description: 'ID del pedido',
+    },
+    driver: {
+      type: 'string',
+      nullable: true,
+      example: '6710f3a1c2a4b5d6e7f80904',
+      description: 'ID del repartidor',
+    },
+    priority: {
+      type: 'string',
+      enum: ['low', 'normal', 'high'],
+      default: 'normal',
+    },
+  },
+},
+
+UpdateDeliveryRequest: {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    driver: {
+      type: 'string',
+      nullable: true,
+      example: '6710f3a1c2a4b5d6e7f80904',
+    },
+    status: {
+      type: 'string',
+      enum: ['pending', 'assigned', 'in_transit', 'delivered'],
+    },
+    priority: {
+      type: 'string',
+      enum: ['low', 'normal', 'high'],
+    },
+  },
+},
+
+MockSeedRequest: {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    qty: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 100,
+      default: 5,
+      example: 10,
+    },
+  },
+},
+
+MockSeedAllRequest: {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    usersQty: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 100,
+      default: 5,
+      example: 10,
+    },
+    ordersQty: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 100,
+      default: 5,
+      example: 8,
+    },
+    deliveriesQty: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 100,
+      default: 5,
+      example: 5,
+    },
+  },
+},
+
+MessageResponse: {
+  type: 'object',
+  required: ['status', 'message'],
+  properties: {
+    status: {
+      type: 'string',
+      enum: ['success'],
+      example: 'success',
+    },
+    message: {
+      type: 'string',
+      example: 'Recurso eliminado correctamente',
+    },
+  },
+},
         User: {
           type: 'object',
           properties: {

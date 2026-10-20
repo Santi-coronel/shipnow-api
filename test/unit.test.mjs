@@ -196,6 +196,29 @@ test('swagger: el spec se genera con los tags esperados', async () => {
   assert.ok(Object.keys(swaggerSpec.paths).length > 0);
 });
 
+test('swagger: incluye schemas reutilizables para requests', async () => {
+  const { default: swaggerSpec } = await import('../src/docs/swagger.js');
+
+  const expectedSchemas = [
+    'CreateUserRequest',
+    'UpdateUserRequest',
+    'CreateOrderRequest',
+    'UpdateOrderRequest',
+    'CreateDeliveryRequest',
+    'UpdateDeliveryRequest',
+    'MockSeedRequest',
+    'MockSeedAllRequest',
+    'MessageResponse',
+  ];
+
+  for (const schemaName of expectedSchemas) {
+    assert.ok(
+      swaggerSpec.components.schemas[schemaName],
+      `Falta el schema ${schemaName}`
+    );
+  }
+});
+
 test('logger: expone los 6 niveles esperados', async () => {
   const { default: logger } = await import('../src/utils/logger.js');
   for (const level of ['debug', 'http', 'info', 'warning', 'error', 'fatal']) {
