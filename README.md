@@ -1,117 +1,347 @@
 # ShipNow API
 
-API de logística (usuarios, pedidos y entregas) hecha con Node.js, Express y MongoDB — Backend III, Coderhouse.
+API de logística desarrollada con Node.js, Express y MongoDB para gestionar usuarios, pedidos y entregas.
 
-Este repositorio es la evolución acumulativa de las **5 pre-entregas** del módulo: arquitectura por capas, mocking, manejo de errores, logging y documentación con Swagger, todo en el mismo proyecto.
+El proyecto utiliza una arquitectura por capas, generación de datos simulados, manejo centralizado de errores, logging con Winston y documentación interactiva con Swagger/OpenAPI.
 
 ## Arquitectura
 
-```
+```text
 Router → Controller → Service → Repository → Model
 ```
 
-- **Router**: solo conecta el path HTTP con el método del Controller.
-- **Controller**: única puerta de entrada HTTP. Lee `req`, llama al Service, devuelve el `res` o hace `next(error)`. No conoce Mongoose.
-- **Service**: concentra la lógica de negocio (cálculo de totales, validación de roles/estados, reglas como "no se puede crear un admin desde el endpoint público"). Llama al Repository.
-- **Repository**: único lugar que conoce Mongoose/MongoDB. Encapsula proyecciones por defecto (ej. nunca devuelve `password`) y populate. No contiene lógica de negocio.
+- **Router:** define las rutas HTTP y su documentación OpenAPI.
+- **Controller:** recibe la solicitud, llama al servicio y construye la respuesta.
+- **Service:** contiene las validaciones y reglas de negocio.
+- **Repository:** concentra el acceso a MongoDB mediante Mongoose.
+- **Model:** define los schemas persistidos en MongoDB.
 
-### ¿Por qué esta separación entre Service y Repository?
+## Requisitos
 
-El Repository se mantiene "tonto" a propósito: solo sabe hacer `find`, `create`, `update`, `delete` contra Mongoose. Cualquier decisión de negocio (¿puede este usuario ser admin?, ¿cuánto suma este pedido?, ¿este driver es válido?) vive en el Service. Esto permite testear la lógica de negocio sin depender de una base real, y cambiar el motor de persistencia sin tocar una sola línea de Service o Controller.
+- Node.js 20 o superior.
+- npm.
+- MongoDB local o una conexión de MongoDB Atlas.
 
-## Instalación y arranque
+## Instalación
+
+Cloná el repositorio e instalá las dependencias:
 
 ```bash
+git clone https://github.com/Santi-coronel/shipnow-api.git
+cd shipnow-api
 npm install
-cp .env.example .env   # completar MONGODB_URI
-npm run dev             # desarrollo, con nodemon
-npm start                # producción
 ```
 
-Si falta `MONGODB_URI`, la app lanza un error descriptivo...
+Copiá el archivo de variables de entorno:
+
+```bash
+cp .env.example .env
+```
+
+En Windows PowerShell también podés usar:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Configurá como mínimo `MONGODB_URI` dentro de `.env`.
 
 ## Variables de entorno
 
 | Variable | Obligatoria | Descripción |
 | --- | --- | --- |
-| `PORT` | No (default 8080) | Puerto del servidor |
-| `MONGODB_URI` | **Sí** | Conexión a MongoDB |
-| `NODE_ENV` | No | `development` \| `test` \| `production` |
-| `LOG_LEVEL` | No | Nivel mínimo de log (`debug` en dev, `info` en prod) |
+| `MONGODB_URI` | Sí | URI de conexión a MongoDB local o Atlas |
+| `PORT` | No | Puerto HTTP. El valor por defecto es `8080` |
+| `NODE_ENV` | No | Entorno: `development`, `test` o `production` |
+| `LOG_LEVEL` | No | Nivel mínimo de log |
 
-## Pre-entrega 1 — Estructura profesional
+Ejemplo:
 
-- `src/config/index.js`: valida `MONGODB_URI` al arranque.
-- `src/constants/index.js`: `USER_ROLES`, `ORDER_STATUS`, `DELIVERY_STATUS`, `DELIVERY_PRIORITY`, todos con `Object.freeze`.
-- Entidades **Users**, **Orders** y **Deliveries** refactorizadas en las 3 capas.
-
-## Pre-entrega 2 — Mocking
-
-Router `/api/mocks`, respeta la arquitectura por capas (mocks → service → repository):
-
-| Endpoint | Qué hace |
-| --- | --- |
-| `GET /api/mocks/users?qty=5` | Usuarios simulados, **no se guardan** |
-| `GET /api/mocks/orders?qty=5` | Pedidos simulados, relacionados a usuarios **ya existentes** en la base |
-| `GET /api/mocks/deliveries?qty=5` | Entregas simuladas, relacionadas a pedidos/drivers existentes |
-| `POST /api/mocks/users/seed?qty=10` | Inserta usuarios de prueba en MongoDB |
-| `POST /api/mocks/orders/seed?qty=10` | Inserta pedidos de prueba (requiere usuarios cargados) |
-| `POST /api/mocks/deliveries/seed?qty=10` | Inserta entregas de prueba (requiere pedidos cargados) |
-| `POST /api/mocks/seed/all?usersQty=10&ordersQty=8&deliveriesQty=5` | Siembra todo en cascada, relaciones incluidas |
-
-Ejemplo de respuesta de `POST /api/mocks/users/seed?qty=10`:
-
-```json
-{ "status": "success", "payload": { "insertados": 10, "coleccion": "usuarios" } }
+```env
+PORT=8080
+MONGODB_URI=mongodb://localhost:27017/shipnow
+NODE_ENV=development
+LOG_LEVEL=debug
 ```
 
-## Pre-entrega 3 — Manejo profesional de errores
+La API no implementa autenticación, por lo que no requiere tokens ni secretos JWT.
 
-- `src/utils/errors.js`: `createError()` + `ErrorDictionary` con errores de dominio (`UserNotFound`, `OrderNotFound`, `InvalidQuantity`, etc.).
-- `src/middlewares/errorHandler.js`: único punto que arma la respuesta de error final. Formato uniforme:
+## Ejecutar el servidor
 
-```json
-{ "status": "error", "error": { "name": "UserNotFound", "code": 4, "message": "Usuario no encontrado" } }
+Modo desarrollo:
+
+```bash
+npm run dev
 ```
 
-- Los Services detectan el error (`throw createError(...)`), los Controllers solo hacen `next(error)`, y el middleware global responde. Se aplica también al módulo de mocks (cantidades inválidas, negativas, o si falta data relacionada).
+Modo normal:
 
-## Pre-entrega 4 — Logging con Winston
+```bash
+npm start
+```
 
-- `src/utils/logger.js`: configuración centralizada, niveles `debug`, `http`, `info`, `warning`, `error`, `fatal`.
-- En `development` se loguea desde `debug`; en `production`, desde `info`.
-- Integrado en: arranque del servidor, conexión a MongoDB, `errorHandler` (negocio → `warning`, inesperado → `error`, falla de arranque → `fatal`), módulo de mocks, creación de pedidos/entregas.
-- Persistencia: `logs/error-YYYY-MM-DD.log` (solo `error` y `fatal`), con rotación diaria y retención de 14 días vía `winston-daily-rotate-file`. La carpeta `logs/` está en `.gitignore`.
-- Endpoint de prueba (no es lógica de negocio): `GET /api/logger/test` dispara un log en cada uno de los 6 niveles.
+Cuando la conexión a MongoDB se establece correctamente, la API queda disponible en:
 
-## Pre-entrega 5 — Documentación con Swagger
+```text
+http://localhost:8080/api
+```
 
-- Swagger UI en **`/api/docs`**, configuración separada de las rutas (`src/docs/swagger.js`).
-- Agrupado por tags: `Users`, `Orders`, `Deliveries`, `Mocks`, `Logger`, `Health`.
-- Schemas reutilizables: `User`, `Order`, `OrderItem`, `Delivery`, `SuccessResponse`, `ErrorResponse`.
-- Cada endpoint documenta método, ruta, body esperado, respuesta exitosa y los errores reales que puede devolver.
+## Documentación con Swagger
 
-Con el server corriendo: `http://localhost:8080/api/docs`
+Swagger UI está disponible en:
+
+```text
+http://localhost:8080/api/docs
+```
+
+Desde esa interfaz se pueden consultar los endpoints, revisar los schemas y ejecutar solicitudes con **Try it out**.
+
+La configuración general está separada en:
+
+```text
+src/docs/swagger.js
+```
+
+Las operaciones se documentan junto a sus rutas mediante comentarios `@openapi`.
+
+## Módulos documentados
+
+### Health
+
+Permite comprobar que el servidor está funcionando.
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | `/api/health` | Estado general de la API |
+
+### Users
+
+Gestiona clientes, repartidores y locales.
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | `/api/users` | Lista usuarios |
+| POST | `/api/users` | Crea un usuario |
+| GET | `/api/users/{id}` | Obtiene un usuario |
+| PUT | `/api/users/{id}` | Actualiza un usuario |
+| DELETE | `/api/users/{id}` | Elimina un usuario |
+
+El endpoint público no permite crear ni asignar el rol `admin`. Las contraseñas se almacenan cifradas con bcrypt y nunca se incluyen en las respuestas de consulta.
+
+### Orders
+
+Gestiona pedidos asociados a usuarios existentes.
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | `/api/orders` | Lista pedidos |
+| POST | `/api/orders` | Crea un pedido |
+| GET | `/api/orders/{id}` | Obtiene un pedido |
+| PUT | `/api/orders/{id}` | Actualiza un pedido |
+| DELETE | `/api/orders/{id}` | Elimina un pedido |
+
+El total se calcula a partir del precio y la cantidad de cada item. Si los items se actualizan, el total se calcula nuevamente.
+
+### Deliveries
+
+Gestiona entregas asociadas a pedidos y repartidores.
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | `/api/deliveries` | Lista entregas |
+| POST | `/api/deliveries` | Crea una entrega |
+| GET | `/api/deliveries/{id}` | Obtiene una entrega |
+| PUT | `/api/deliveries/{id}` | Actualiza una entrega |
+| DELETE | `/api/deliveries/{id}` | Elimina una entrega |
+
+Un usuario asignado como repartidor debe tener el rol `driver`.
+
+### Mocks
+
+Genera datos simulados con Faker.
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | `/api/mocks/users?qty=5` | Genera usuarios sin guardarlos |
+| GET | `/api/mocks/orders?qty=5` | Genera pedidos sin guardarlos |
+| GET | `/api/mocks/deliveries?qty=5` | Genera entregas sin guardarlas |
+| POST | `/api/mocks/users/seed` | Genera e inserta usuarios |
+| POST | `/api/mocks/orders/seed` | Genera e inserta pedidos |
+| POST | `/api/mocks/deliveries/seed` | Genera e inserta entregas |
+| POST | `/api/mocks/seed/all` | Inserta todos los datos en orden |
+
+La cantidad mínima permitida es `1`, la máxima es `100` y el valor predeterminado es `5`.
+
+Body para los seeds individuales:
+
+```json
+{
+  "qty": 10
+}
+```
+
+Body para insertar todas las entidades:
+
+```json
+{
+  "usersQty": 10,
+  "ordersQty": 8,
+  "deliveriesQty": 5
+}
+```
+
+Los endpoints POST también conservan compatibilidad con las cantidades enviadas como query parameters.
+
+Los pedidos simulados requieren usuarios existentes. Las entregas simuladas requieren pedidos existentes.
+
+### Logger
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | `/api/logger/test` | Genera un log en cada nivel configurado |
+
+Este endpoint es una herramienta de validación del logger y no representa una funcionalidad de negocio.
+
+## Schemas reutilizables
+
+La documentación utiliza schemas OpenAPI para:
+
+- `User`
+- `Order`
+- `OrderItem`
+- `Delivery`
+- `SuccessResponse`
+- `ErrorResponse`
+- Requests de creación y actualización
+- Respuestas individuales y colecciones
+- Requests para generación de mocks
+
+## Formato de respuestas
+
+Respuesta exitosa con payload:
+
+```json
+{
+  "status": "success",
+  "payload": {}
+}
+```
+
+Respuesta exitosa con mensaje:
+
+```json
+{
+  "status": "success",
+  "message": "Recurso eliminado correctamente"
+}
+```
+
+Respuesta de error:
+
+```json
+{
+  "status": "error",
+  "error": {
+    "name": "UserNotFound",
+    "code": 4,
+    "message": "Usuario no encontrado"
+  }
+}
+```
+
+Los errores documentados incluyen:
+
+- Datos inválidos.
+- JSON inválido.
+- ID de MongoDB inválido.
+- Recurso no encontrado.
+- Rol o estado inválido.
+- Email duplicado.
+- Cantidad inválida en mocks.
+- Error interno del servidor.
+
+## Orden recomendado para probar la API
+
+Podés cargar datos relacionados desde Swagger ejecutando:
+
+```text
+POST /api/mocks/seed/all
+```
+
+Con este body:
+
+```json
+{
+  "usersQty": 10,
+  "ordersQty": 8,
+  "deliveriesQty": 5
+}
+```
+
+Para probar manualmente cada módulo:
+
+1. Crear o insertar usuarios.
+2. Copiar el ID de un usuario.
+3. Crear un pedido usando ese ID como `customer`.
+4. Copiar el ID del pedido.
+5. Crear una entrega usando ese ID como `order`.
+6. Consultar, actualizar y eliminar los recursos por ID.
 
 ## Tests
+
+Ejecutá:
 
 ```bash
 npm test
 ```
 
-Corre tests unitarios (sin DB) sobre config, constantes, `createError`, generadores de mocks y el spec de Swagger. El sandbox de desarrollo no tiene salida de red para bajar un binario de MongoDB en memoria, así que el flujo completo (CRUD real contra Mongo) se validó corriendo el servidor localmente contra una base real.
+Los tests unitarios comprueban:
 
-## Endpoints
+- Carga y validación de configuración.
+- Constantes del dominio.
+- Construcción de errores.
+- Generadores de mocks.
+- Validaciones de cantidades.
+- Actualizaciones seguras de usuarios.
+- Recálculo del total de pedidos.
+- Generación del spec de Swagger.
+- Existencia de tags, schemas, request bodies y respuestas documentadas.
+- Configuración de los niveles del logger.
 
-| Método | Ruta | Descripción |
-| --- | --- | --- |
-| GET | `/api/health` | Health check |
-| CRUD | `/api/users` | Usuarios |
-| CRUD | `/api/orders` | Pedidos |
-| CRUD | `/api/deliveries` | Entregas |
-| GET/POST | `/api/mocks/*` | Mocking (ver Pre-entrega 2) |
-| GET | `/api/logger/test` | Prueba de niveles de log |
-| GET | `/api/docs` | Documentación Swagger |
+Los tests automatizados no requieren una conexión activa a MongoDB. Para probar el CRUD completo y Swagger UI se debe iniciar el servidor con una conexión válida.
 
-Formato de éxito: `{ "status": "success", "payload": ... }`
-Formato de error: `{ "status": "error", "error": { "name", "code", "message" } }`
+## Logging
+
+El proyecto utiliza los siguientes niveles:
+
+```text
+debug
+http
+info
+warning
+error
+fatal
+```
+
+En desarrollo se muestran mensajes desde `debug`. En producción se muestran desde `info`.
+
+Los errores se guardan en archivos diarios dentro de `logs/`, con una retención de 14 días. Esa carpeta está excluida de Git.
+
+## Estructura principal
+
+```text
+src/
+├── config/
+├── constants/
+├── controllers/
+├── docs/
+├── middlewares/
+├── mocks/
+├── models/
+├── repositories/
+├── routes/
+├── services/
+├── utils/
+├── app.js
+└── server.js
+```
