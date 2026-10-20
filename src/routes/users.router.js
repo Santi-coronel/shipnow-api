@@ -9,48 +9,61 @@ const router = Router();
  *   get:
  *     tags: [Users]
  *     summary: Lista todos los usuarios
+ *     description: Devuelve todos los usuarios sin incluir sus contraseñas.
  *     responses:
  *       200:
- *         description: Lista de usuarios
+ *         description: Lista de usuarios obtenida correctamente
  *         content:
  *           application/json:
  *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/SuccessResponse'
+ *               $ref: '#/components/schemas/UsersResponse'
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *   post:
  *     tags: [Users]
- *     summary: Crea un usuario (no permite crear admins desde aca)
+ *     summary: Crea un usuario
+ *     description: Crea un usuario nuevo. El endpoint público no permite crear administradores.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [firstName, lastName, email, password]
- *             properties:
- *               firstName: { type: string }
- *               lastName: { type: string }
- *               email: { type: string }
- *               password: { type: string }
- *               role: { type: string, enum: [customer, driver, store] }
+ *             $ref: '#/components/schemas/CreateUserRequest'
  *     responses:
  *       201:
- *         description: Usuario creado
+ *         description: Usuario creado correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserResponse'
  *       400:
- *         description: Rol invalido
+ *         description: Datos o rol inválidos
  *         content:
  *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       403:
- *         description: Intento de crear un admin
+ *         description: No se permite crear un usuario administrador
  *         content:
  *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       409:
- *         description: El email ya existe
+ *         description: Ya existe un usuario con el email indicado
  *         content:
  *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/', usersController.findAll);
 router.post('/', usersController.create);
@@ -60,33 +73,89 @@ router.post('/', usersController.create);
  * /users/{id}:
  *   get:
  *     tags: [Users]
- *     summary: Obtiene un usuario por id
+ *     summary: Obtiene un usuario por ID
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string }
+ *         description: ID de MongoDB del usuario
+ *         schema:
+ *           type: string
+ *         example: 6710f3a1c2a4b5d6e7f80901
  *     responses:
  *       200:
  *         description: Usuario encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserResponse'
+ *       400:
+ *         description: El ID recibido no es válido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Usuario no encontrado
  *         content:
  *           application/json:
- *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *   put:
  *     tags: [Users]
  *     summary: Actualiza un usuario
+ *     description: Actualiza uno o más campos. No permite asignar el rol admin y cifra una contraseña nueva.
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string }
+ *         description: ID de MongoDB del usuario
+ *         schema:
+ *           type: string
+ *         example: 6710f3a1c2a4b5d6e7f80901
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateUserRequest'
  *     responses:
  *       200:
- *         description: Usuario actualizado
+ *         description: Usuario actualizado correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserResponse'
+ *       400:
+ *         description: ID, datos o rol inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: No se permite asignar el rol administrador
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Usuario no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *   delete:
  *     tags: [Users]
  *     summary: Elimina un usuario
@@ -94,12 +163,35 @@ router.post('/', usersController.create);
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string }
+ *         description: ID de MongoDB del usuario
+ *         schema:
+ *           type: string
+ *         example: 6710f3a1c2a4b5d6e7f80901
  *     responses:
  *       200:
- *         description: Usuario eliminado
+ *         description: Usuario eliminado correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MessageResponse'
+ *       400:
+ *         description: El ID recibido no es válido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Usuario no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/:id', usersController.findById);
 router.put('/:id', usersController.update);
