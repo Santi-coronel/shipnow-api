@@ -219,6 +219,35 @@ test('swagger: incluye schemas reutilizables para requests', async () => {
   }
 });
 
+test('swagger: incluye respuestas tipadas para las entidades', async () => {
+  const { default: swaggerSpec } = await import('../src/docs/swagger.js');
+
+  const expectedSchemas = [
+    'UserResponse',
+    'UsersResponse',
+    'OrderResponse',
+    'OrdersResponse',
+    'DeliveryResponse',
+    'DeliveriesResponse',
+  ];
+
+  for (const schemaName of expectedSchemas) {
+    assert.ok(
+      swaggerSpec.components.schemas[schemaName],
+      `Falta el schema ${schemaName}`
+    );
+  }
+
+  const usersPayload =
+    swaggerSpec.components.schemas.UsersResponse.allOf[1].properties.payload;
+
+  assert.equal(usersPayload.type, 'array');
+  assert.equal(
+    usersPayload.items.$ref,
+    '#/components/schemas/User'
+  );
+});
+
 test('logger: expone los 6 niveles esperados', async () => {
   const { default: logger } = await import('../src/utils/logger.js');
   for (const level of ['debug', 'http', 'info', 'warning', 'error', 'fatal']) {
