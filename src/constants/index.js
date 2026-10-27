@@ -18,6 +18,11 @@ export const ORDER_STATUS = Object.freeze({
   CANCELLED: 'cancelled',
 });
 
+export const PRODUCT_STATUS = Object.freeze({
+  AVAILABLE: 'available',
+  OUT_OF_STOCK: 'out_of_stock',
+});
+
 export const DELIVERY_STATUS = Object.freeze({
   PENDING: 'pending',
   ASSIGNED: 'assigned',

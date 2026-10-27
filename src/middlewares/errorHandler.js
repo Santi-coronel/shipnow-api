@@ -14,7 +14,7 @@ export const errorHandler = (err, req, res, next) => {
   } else if (err.type === 'entity.parse.failed') {
     error = createError(ErrorDictionary.INVALID_JSON);
   } else if (err.name === 'ValidationError' && !err.status) {
-    error = createError({ ...ErrorDictionary.INVALID_ID, message: err.message, name: 'ValidationError', status: 400 });
+    error = createError({ ...ErrorDictionary.VALIDATION_ERROR, message: err.message });
   }
 
   const status = error.status || 500;

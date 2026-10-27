@@ -128,6 +128,18 @@ Gestiona clientes, repartidores y locales.
 
 El endpoint público no permite crear ni asignar el rol `admin`. Las contraseñas se almacenan cifradas con bcrypt y nunca se incluyen en las respuestas de consulta.
 
+### Products
+
+Gestiona los productos. El estado se calcula según el stock: `available` si es mayor a 0 y `out_of_stock` si es 0.
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | `/api/products` | Lista productos disponibles (`?includeOutOfStock=true` incluye los agotados) |
+| POST | `/api/products` | Crea un producto |
+| GET | `/api/products/{id}` | Obtiene un producto |
+| PUT | `/api/products/{id}` | Actualiza un producto |
+| DELETE | `/api/products/{id}` | Elimina un producto |
+
 ### Orders
 
 Gestiona pedidos asociados a usuarios existentes.
@@ -243,7 +255,7 @@ Respuesta de error:
   "status": "error",
   "error": {
     "name": "UserNotFound",
-    "code": 4,
+    "code": 200,
     "message": "Usuario no encontrado"
   }
 }
@@ -289,26 +301,59 @@ Para probar manualmente cada módulo:
 
 ## Tests
 
-Ejecutá:
+Los tests son funcionales (Mocha + Chai + Supertest) y pegan contra la app Express real con una base de datos MongoDB de prueba.
+
+| Herramienta | Uso |
+| --- | --- |
+| Mocha | Runner de tests |
+| Chai | Aserciones (`expect`) |
+| Supertest | Peticiones HTTP contra `app` sin levantar el servidor |
+
+### Cómo correrlos
 
 ```bash
+npm install
 npm test
 ```
 
-Los tests unitarios comprueban:
+Hace falta un MongoDB accesible (local o Atlas). Por defecto se usa `mongodb://127.0.0.1:27017/shipnow-test`, definido en `.env.test`. Para usar otra base:
 
-- Carga y validación de configuración.
-- Constantes del dominio.
-- Construcción de errores.
-- Generadores de mocks.
-- Validaciones de cantidades.
-- Actualizaciones seguras de usuarios.
-- Recálculo del total de pedidos.
-- Generación del spec de Swagger.
-- Existencia de tags, schemas, request bodies y respuestas documentadas.
-- Configuración de los niveles del logger.
+```bash
+MONGODB_URI=mongodb://localhost:27017/shipnow-test npm test
+```
 
-Los tests automatizados no requieren una conexión activa a MongoDB. Para probar el CRUD completo y Swagger UI se debe iniciar el servidor con una conexión válida.
+El nombre de la base **tiene que incluir "test"**: si no, la suite aborta para no tocar datos reales. Al terminar se borra la base de prueba.
+
+### Variables de entorno de test
+
+Con `NODE_ENV=test` se carga `.env.test` (sin secretos, se sube al repo) en lugar de `.env`.
+
+| Variable | Valor |
+| --- | --- |
+| `PORT` | `8081` |
+| `MONGODB_URI` | `mongodb://127.0.0.1:27017/shipnow-test` |
+| `NODE_ENV` | `test` |
+| `LOG_LEVEL` | `error` |
+
+El logger queda en silencio durante los tests.
+
+### Qué cubren
+
+Los tests están en `tests/`, agrupados por recurso:
+
+- `tests/functional/users.test.js`: GET, POST, GET por id, PUT y DELETE de usuarios.
+- `tests/functional/products.test.js`: CRUD de productos y estados `available` / `out_of_stock`.
+- `tests/functional/orders.test.js`: GET, POST, GET por id, cambios de estado, recálculo del total y DELETE.
+- `tests/functional/deliveries.test.js`: CRUD de entregas, repartidor válido e inválido.
+- `tests/functional/mocks.test.js`: endpoints GET y de seed, cantidades inválidas, dependencias faltantes.
+- `tests/functional/system.test.js`: health, `/api/logger/test`, Swagger en `/api/docs`, ruta inexistente y JSON inválido.
+- `tests/unit/units.test.js`: constantes, errores, mocks y estructura del spec de Swagger.
+
+Se prueban casos exitosos y de error (datos incompletos, recurso inexistente, estado inválido, cantidad inválida, ruta inexistente). En los errores se valida el status HTTP y el formato `{ name, code, message }` contra el `ErrorDictionary`.
+
+### Datos y limpieza
+
+Cada test crea sus propios datos (por ejemplo, un usuario antes de crear un pedido) y la colección se limpia antes de cada test, así que no dependen del orden ni de lo que haya en la base. Se puede correr `npm test` varias veces seguidas sin borrar nada a mano.
 
 ## Logging
 

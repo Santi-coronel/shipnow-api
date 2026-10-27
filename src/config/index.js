@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
 
 // Variables obligatorias: si falta alguna, la app no debe arrancar.
 const requiredEnvVars = ['MONGODB_URI'];

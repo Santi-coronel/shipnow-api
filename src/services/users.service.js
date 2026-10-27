@@ -16,6 +16,12 @@ class UsersService {
   }
 
   async create(userData) {
+    const requiredFields = ['firstName', 'lastName', 'email', 'password'];
+    const isMissing = (field) => typeof userData[field] !== 'string' || !userData[field].trim();
+    if (requiredFields.some(isMissing)) {
+      throw createError(ErrorDictionary.INVALID_USER_DATA);
+    }
+
     if (userData.role === USER_ROLES.ADMIN) {
       throw createError(ErrorDictionary.ADMIN_CREATION_FORBIDDEN);
     }

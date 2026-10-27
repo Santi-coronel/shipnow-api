@@ -17,12 +17,19 @@ class OrdersService {
   }
 
   async create(orderData) {
-    const customer = await usersRepo.findById(orderData.customer);
-    if (!customer) throw createError(ErrorDictionary.USER_NOT_FOUND);
+    if (!orderData.customer || !orderData.deliveryAddress) {
+      throw createError(ErrorDictionary.INVALID_ORDER_DATA);
+    }
 
     if (!Array.isArray(orderData.items) || orderData.items.length === 0) {
       throw createError(ErrorDictionary.INVALID_ORDER_ITEMS);
     }
+    if (!orderData.items.every((item) => item && typeof item === 'object')) {
+      throw createError(ErrorDictionary.INVALID_ORDER_ITEMS);
+    }
+
+    const customer = await usersRepo.findById(orderData.customer);
+    if (!customer) throw createError(ErrorDictionary.USER_NOT_FOUND);
 
     // Logica de negocio: el total se calcula en el Service, nunca en el Repository.
     const total = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0);

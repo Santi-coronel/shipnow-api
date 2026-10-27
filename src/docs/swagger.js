@@ -33,6 +33,10 @@ const options = {
         description: 'Gestion de usuarios, clientes, repartidores y locales',
       },
       {
+        name: 'Products',
+        description: 'Gestion de productos y su disponibilidad segun el stock',
+      },
+      {
         name: 'Orders',
         description: 'Gestion de pedidos',
       },
@@ -283,6 +287,82 @@ const options = {
               example: '2026-10-19T22:30:00.000Z',
             },
           },
+        },
+
+        Product: {
+          type: 'object',
+          required: ['_id', 'name', 'price', 'stock', 'status'],
+          properties: {
+            _id: {
+              type: 'string',
+              example: '6710f3a1c2a4b5d6e7f80905',
+              description: 'Identificador unico del producto',
+            },
+            name: { type: 'string', example: 'Caja mediana' },
+            description: { type: 'string', example: 'Caja de carton para envios' },
+            price: { type: 'number', format: 'float', minimum: 0, example: 1500 },
+            stock: { type: 'integer', minimum: 0, example: 25 },
+            status: {
+              type: 'string',
+              enum: ['available', 'out_of_stock'],
+              example: 'available',
+              description: 'Se calcula a partir del stock',
+            },
+            createdAt: { type: 'string', format: 'date-time', example: '2026-10-19T22:30:00.000Z' },
+            updatedAt: { type: 'string', format: 'date-time', example: '2026-10-19T22:30:00.000Z' },
+          },
+        },
+
+        CreateProductRequest: {
+          type: 'object',
+          required: ['name', 'price', 'stock'],
+          additionalProperties: false,
+          properties: {
+            name: { type: 'string', example: 'Caja mediana' },
+            description: { type: 'string', example: 'Caja de carton para envios' },
+            price: { type: 'number', format: 'float', minimum: 0, example: 1500 },
+            stock: { type: 'integer', minimum: 0, example: 25 },
+          },
+        },
+
+        UpdateProductRequest: {
+          type: 'object',
+          minProperties: 1,
+          additionalProperties: false,
+          properties: {
+            name: { type: 'string', example: 'Caja grande' },
+            description: { type: 'string' },
+            price: { type: 'number', format: 'float', minimum: 0, example: 1800 },
+            stock: { type: 'integer', minimum: 0, example: 0 },
+            status: { type: 'string', enum: ['available', 'out_of_stock'] },
+          },
+        },
+
+        ProductResponse: {
+          allOf: [
+            { $ref: '#/components/schemas/SuccessResponse' },
+            {
+              type: 'object',
+              properties: {
+                payload: { $ref: '#/components/schemas/Product' },
+              },
+            },
+          ],
+        },
+
+        ProductsResponse: {
+          allOf: [
+            { $ref: '#/components/schemas/SuccessResponse' },
+            {
+              type: 'object',
+              properties: {
+                payload: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Product' },
+                },
+              },
+            },
+          ],
         },
 
         CreateUserRequest: {
@@ -623,7 +703,8 @@ const options = {
                 },
                 code: {
                   type: 'integer',
-                  example: 4,
+                  example: 200,
+                  description: 'Codigo interno del error (ver EErrors en src/utils/errors.js)',
                 },
                 message: {
                   type: 'string',

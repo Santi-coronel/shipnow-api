@@ -20,10 +20,12 @@ class UsersRepository {
   }
 
   async update(id, userData) {
-    return User.findByIdAndUpdate(id, userData, {
+    const updated = await User.findByIdAndUpdate(id, userData, {
       new: true,
       runValidators: true,
-    }).select('-password');
+    });
+    if (!updated) return null;
+    return User.findById(id).select('-password');
   }
 
   async delete(id) {

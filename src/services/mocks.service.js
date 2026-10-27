@@ -37,7 +37,7 @@ class MocksService {
     const existingCustomers = await usersRepo.findAll();
     if (existingCustomers.length === 0) {
       throw createError({
-        ...ErrorDictionary.INVALID_QUANTITY,
+        ...ErrorDictionary.MOCK_DEPENDENCY_MISSING,
         message: 'No hay usuarios en la base para generar pedidos simulados. Primero sembra usuarios.',
       });
     }
@@ -50,7 +50,7 @@ class MocksService {
     const existingUsers = await usersRepo.findAll();
     if (existingOrders.length === 0) {
       throw createError({
-        ...ErrorDictionary.INVALID_QUANTITY,
+        ...ErrorDictionary.MOCK_DEPENDENCY_MISSING,
         message: 'No hay pedidos en la base para generar entregas simuladas. Primero sembra pedidos.',
       });
     }

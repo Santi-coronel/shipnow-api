@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import usersRouter from './users.router.js';
+import productsRouter from './products.router.js';
 import ordersRouter from './orders.router.js';
 import deliveriesRouter from './deliveries.router.js';
 import mocksRouter from './mocks.router.js';
@@ -33,6 +34,7 @@ router.get('/health', (req, res) => {
 });
 
 router.use('/users', usersRouter);
+router.use('/products', productsRouter);
 router.use('/orders', ordersRouter);
 router.use('/deliveries', deliveriesRouter);
 router.use('/mocks', mocksRouter);
