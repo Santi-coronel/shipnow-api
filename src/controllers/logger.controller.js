@@ -1,8 +1,5 @@
 import logger from '../utils/logger.js';
 
-// Endpoint de prueba del logger (Pre-entrega 4).
-// No es una funcionalidad de negocio: solo valida que los 6 niveles
-// esten configurados correctamente (consola + archivo con rotacion).
 class LoggerController {
   testLogger(req, res) {
     logger.debug('Log de prueba: nivel debug');

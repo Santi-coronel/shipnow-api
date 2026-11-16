@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
 
-// Variables obligatorias: si falta alguna, la app no debe arrancar.
 const requiredEnvVars = ['MONGODB_URI'];
 requiredEnvVars.forEach((key) => {
   if (!process.env[key]) {
@@ -13,8 +12,6 @@ requiredEnvVars.forEach((key) => {
   }
 });
 
-// Unico lugar del proyecto que lee process.env directamente.
-// El resto de los archivos debe importar este objeto ya validado.
 const config = Object.freeze({
   port: Number(process.env.PORT) || 8080,
   mongoUri: process.env.MONGODB_URI,

@@ -9,8 +9,6 @@ import { MOCKING_PARAMETERS } from '../constants/index.js';
 import { createError, ErrorDictionary } from '../utils/errors.js';
 import logger from '../utils/logger.js';
 
-// Valida que qty sea un entero positivo dentro del rango permitido.
-// La validacion vive en el Service, no en el router ni en el controller.
 function parseQty(qty) {
   const parsedQty = qty === undefined ? MOCKING_PARAMETERS.DEFAULT_QTY : Number(qty);
   if (!Number.isInteger(parsedQty) || parsedQty < MOCKING_PARAMETERS.MIN_QTY) {
@@ -26,7 +24,6 @@ function parseQty(qty) {
 }
 
 class MocksService {
-  // ---- Generacion sin persistir ----
 
   getUsers(qty) {
     return generateMockUsers(parseQty(qty));
@@ -56,8 +53,6 @@ class MocksService {
     }
     return generateMockDeliveries(parsedQty, existingOrders, existingUsers);
   }
-
-  // ---- Generacion + persistencia controlada ----
 
   async seedUsers(qty) {
     const users = this.getUsers(qty);
@@ -98,8 +93,6 @@ class MocksService {
     }
   }
 
-  // Siembra en cascada: usuarios -> pedidos -> entregas, respetando
-  // las relaciones de punta a punta en una sola llamada.
   async seedAll({ usersQty, ordersQty, deliveriesQty }) {
     const usersResult = await this.seedUsers(usersQty);
     const ordersResult = await this.seedOrders(ordersQty);

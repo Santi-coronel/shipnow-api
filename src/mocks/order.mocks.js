@@ -10,8 +10,6 @@ const generateMockItems = () => {
   }));
 };
 
-// Recibe una lista de customers ya existentes/insertados para que cada
-// pedido quede relacionado a un usuario real (pedido <-> usuario).
 export const generateMockOrder = (customers) => {
   const customer = faker.helpers.arrayElement(customers);
   const items = generateMockItems();

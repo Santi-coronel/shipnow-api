@@ -3,7 +3,6 @@ import { documentsUploader, receiptsUploader } from '../config/upload.js';
 import { createError, ErrorDictionary } from '../utils/errors.js';
 import logger from '../utils/logger.js';
 
-// Pasa los errores propios de Multer al formato de errores del proyecto.
 const handleUpload = (uploader) => (req, res, next) => {
   uploader(req, res, (err) => {
     if (!err) return next();
@@ -20,7 +19,6 @@ const handleUpload = (uploader) => (req, res, next) => {
       return next(createError(ErrorDictionary.INVALID_FILE_FIELD));
     }
 
-    // errores propios (fileFilter) o de disco
     if (err.status) return next(err);
     logger.error(`Error al guardar archivo: ${err.message}`);
     return next(createError(ErrorDictionary.FILE_SAVE_FAILED));

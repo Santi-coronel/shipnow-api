@@ -1,7 +1,5 @@
 import User from '../models/user.model.js';
 
-// Unico archivo del proyecto que conoce Mongoose para la entidad User.
-// Encapsula defaults de proyeccion (nunca devuelve el password).
 class UsersRepository {
   async findAll(filter = {}) {
     return User.find(filter).select('-password');

@@ -7,8 +7,6 @@ import { UPLOAD_PARAMETERS } from '../constants/index.js';
 import { createError, ErrorDictionary } from '../utils/errors.js';
 import logger from '../utils/logger.js';
 
-// Toda la configuracion de Multer vive aca; los routers solo la usan.
-
 const folderPath = (folder) => path.join(config.uploadsDir, folder);
 
 export const ensureUploadFolders = () => {
@@ -17,7 +15,6 @@ export const ensureUploadFolders = () => {
   });
 };
 
-// Nombre generado: nunca se usa el nombre original en el disco
 const generateFileName = (originalName) => {
   const ext = path.extname(originalName).toLowerCase();
   return `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;

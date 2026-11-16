@@ -31,7 +31,6 @@ class OrdersService {
     const customer = await usersRepo.findById(orderData.customer);
     if (!customer) throw createError(ErrorDictionary.USER_NOT_FOUND);
 
-    // Logica de negocio: el total se calcula en el Service, nunca en el Repository.
     const total = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const newOrder = await ordersRepo.create({

@@ -1,11 +1,6 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import config from '../config/index.js';
 
-// Configuracion de Swagger separada de la logica de rutas (Pre-entrega 5).
-// Los endpoints documentan sus detalles via comentarios @openapi en cada
-// archivo de rutas; aca se define la informacion general, los tags
-// y los schemas reutilizables.
-
 const options = {
   definition: {
     openapi: '3.0.0',

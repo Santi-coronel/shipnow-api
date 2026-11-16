@@ -1,8 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { DELIVERY_STATUS, DELIVERY_PRIORITY, USER_ROLES } from '../constants/index.js';
 
-// Recibe pedidos y usuarios ya existentes para respetar las relaciones:
-// entrega <-> pedido, y repartidor con rol DRIVER coherente.
 export const generateMockDelivery = (orders, drivers) => {
   const order = faker.helpers.arrayElement(orders);
   const driver = drivers.length > 0 && faker.datatype.boolean() ? faker.helpers.arrayElement(drivers) : null;

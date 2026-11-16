@@ -1,7 +1,3 @@
-// Logger centralizado con Winston (Pre-entrega 4).
-// Un unico punto de configuracion, importado desde cualquier archivo
-// sin repetir setup. Niveles: debug, http, info, warning, error, fatal.
-
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import config from '../config/index.js';
@@ -40,8 +36,6 @@ const fileFormat = winston.format.combine(
   winston.format.printf(({ timestamp, level, message }) => `${timestamp} [${level}] ${message}`)
 );
 
-// En desarrollo se muestra todo, incluido "debug".
-// En produccion solo se registra desde "info" hacia arriba en severidad.
 const consoleLevel = config.nodeEnv === 'production' ? 'info' : 'debug';
 
 const transports = [
@@ -49,7 +43,6 @@ const transports = [
     level: consoleLevel,
     format: consoleFormat,
   }),
-  // Rotacion diaria de archivos: evita que los logs crezcan sin control.
   // Solo persiste error y fatal (son los niveles 0 y 1 => "error" incluye fatal).
   new DailyRotateFile({
     level: 'error',

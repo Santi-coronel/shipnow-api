@@ -10,7 +10,6 @@ import logger from '../utils/logger.js';
 
 const USER_DOCUMENT_TYPES = [DOCUMENT_TYPES.ID_CARD, DOCUMENT_TYPES.LICENSE, DOCUMENT_TYPES.INVOICE];
 
-// ruta relativa al proyecto, asi no se expone la ruta real del servidor
 const toRelativePath = (absolutePath) => path.relative(process.cwd(), absolutePath).split(path.sep).join('/');
 
 const removeFile = async (filePath) => {
@@ -18,7 +17,6 @@ const removeFile = async (filePath) => {
   try {
     await fs.unlink(filePath);
   } catch {
-    // si ya no esta, no hay nada que borrar
   }
 };
 
@@ -62,7 +60,6 @@ class FilesService {
 
       let finalPath = file.path;
       try {
-        // las licencias van a su propia carpeta
         if (documentType === DOCUMENT_TYPES.LICENSE) {
           finalPath = path.join(getFolderPath(UPLOAD_PARAMETERS.FOLDERS.LICENSES), file.filename);
           await fs.mkdir(path.dirname(finalPath), { recursive: true });
