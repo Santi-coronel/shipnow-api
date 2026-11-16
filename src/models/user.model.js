@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import fileSchema from './file.schema.js';
 import { USER_ROLES } from '../constants/index.js';
 
 const userSchema = new mongoose.Schema(
@@ -9,6 +10,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: [true, 'La contraseña es obligatoria'] },
     role: { type: String, enum: Object.values(USER_ROLES), default: USER_ROLES.CUSTOMER },
     isAvailable: { type: Boolean, default: true },
+    documents: { type: [fileSchema], default: [] },
   },
   { timestamps: true }
 );

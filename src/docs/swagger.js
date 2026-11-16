@@ -11,7 +11,7 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'ShipNow API',
-      version: '5.0.0',
+      version: '7.0.0',
       description:
         'API de logistica para gestionar usuarios, pedidos y entregas. ' +
         'Construida con Node.js, Express y MongoDB, utilizando una arquitectura ' +
@@ -45,6 +45,10 @@ const options = {
         description: 'Gestion de entregas asociadas a pedidos y repartidores',
       },
       {
+        name: 'Files',
+        description: 'Carga de documentos de usuario y comprobantes de pedidos y entregas (multipart/form-data)',
+      },
+      {
         name: 'Mocks',
         description: 'Generacion y carga de datos de prueba',
       },
@@ -67,6 +71,11 @@ const options = {
             'isAvailable',
           ],
           properties: {
+            documents: {
+              type: 'array',
+              description: 'Documentos cargados del usuario (solo metadatos)',
+              items: { $ref: '#/components/schemas/FileMetadata' },
+            },
             _id: {
               type: 'string',
               example: '6710f3a1c2a4b5d6e7f80901',
@@ -150,6 +159,11 @@ const options = {
             'priority',
           ],
           properties: {
+            receipts: {
+              type: 'array',
+              description: 'Comprobantes cargados del pedido (solo metadatos)',
+              items: { $ref: '#/components/schemas/FileMetadata' },
+            },
             _id: {
               type: 'string',
               example: '6710f3a1c2a4b5d6e7f80902',
@@ -222,6 +236,11 @@ const options = {
           type: 'object',
           required: ['_id', 'order', 'status', 'priority'],
           properties: {
+            receipts: {
+              type: 'array',
+              description: 'Comprobantes cargados de la entrega (solo metadatos)',
+              items: { $ref: '#/components/schemas/FileMetadata' },
+            },
             _id: {
               type: 'string',
               example: '6710f3a1c2a4b5d6e7f80903',
@@ -667,6 +686,51 @@ const options = {
               example: 5,
             },
           },
+        },
+
+        FileMetadata: {
+          type: 'object',
+          required: ['_id', 'originalName', 'fileName', 'path', 'mimeType', 'size', 'documentType', 'uploadedAt'],
+          description: 'Metadatos del archivo. El archivo en si se guarda en el servidor, no en MongoDB.',
+          properties: {
+            _id: { type: 'string', example: '6710f3a1c2a4b5d6e7f80999' },
+            originalName: { type: 'string', example: 'dni-frente.pdf', description: 'Nombre con el que se subio el archivo' },
+            fileName: { type: 'string', example: '1731780000000-a1b2c3d4e5f6.pdf', description: 'Nombre generado por el servidor' },
+            path: { type: 'string', example: 'uploads/documents/1731780000000-a1b2c3d4e5f6.pdf', description: 'Ruta relativa dentro del servidor' },
+            mimeType: { type: 'string', example: 'application/pdf' },
+            size: { type: 'integer', example: 48213, description: 'Tamaño en bytes' },
+            documentType: { type: 'string', enum: ['id_card', 'license', 'invoice', 'proof_of_delivery'], example: 'id_card' },
+            uploadedAt: { type: 'string', format: 'date-time', example: '2026-11-16T21:40:00.000Z' },
+          },
+        },
+
+        UploadDocumentRequest: {
+          type: 'object',
+          required: ['file', 'documentType'],
+          properties: {
+            file: { type: 'string', format: 'binary', description: 'Archivo a subir (PDF, JPG o PNG, maximo 2 MB). El campo se tiene que llamar "file".' },
+            documentType: { type: 'string', enum: ['id_card', 'license', 'invoice'], example: 'id_card', description: 'Tipo de documento' },
+          },
+        },
+
+        UploadReceiptRequest: {
+          type: 'object',
+          required: ['file'],
+          properties: {
+            file: { type: 'string', format: 'binary', description: 'Comprobante a subir (PDF, JPG o PNG, maximo 2 MB). El campo se tiene que llamar "file".' },
+          },
+        },
+
+        FilesResponse: {
+          allOf: [
+            { $ref: '#/components/schemas/SuccessResponse' },
+            {
+              type: 'object',
+              properties: {
+                payload: { type: 'array', items: { $ref: '#/components/schemas/FileMetadata' } },
+              },
+            },
+          ],
         },
 
         SuccessResponse: {

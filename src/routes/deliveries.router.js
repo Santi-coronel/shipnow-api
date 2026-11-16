@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import filesController from '../controllers/files.controller.js';
+import { uploadReceipt } from '../middlewares/upload.middleware.js';
 import deliveriesController from '../controllers/deliveries.controller.js';
 
 const router = Router();
@@ -184,5 +186,109 @@ router.post('/', deliveriesController.create);
 router.get('/:id', deliveriesController.findById);
 router.put('/:id', deliveriesController.update);
 router.delete('/:id', deliveriesController.delete);
+
+/**
+ * @openapi
+ * /deliveries/{id}/receipts:
+ *   post:
+ *     tags: [Files]
+ *     summary: Sube un comprobante de una entrega
+ *     description: Recibe el archivo en el campo `file`. Guarda el archivo en el servidor y registra solo los metadatos en la entrega. Acepta PDF, JPG y PNG de hasta 2 MB.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID de la entrega
+ *         schema:
+ *           type: string
+ *         example: 6710f3a1c2a4b5d6e7f80901
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/UploadReceiptRequest'
+ *     responses:
+ *       201:
+ *         description: Archivo cargado y asociado correctamente. Devuelve la entidad actualizada.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DeliveryResponse'
+ *       400:
+ *         description: Falta el archivo (FileRequired, 700), el campo no se llama "file" (InvalidFileField, 703) o el ID no es valido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Entrega no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       413:
+ *         description: El archivo supera los 2 MB (FileTooLarge, codigo 702)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       415:
+ *         description: Tipo de archivo no permitido (InvalidFileType, codigo 701)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: No se pudo guardar el archivo (FileSaveFailed) o error interno
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
+/**
+ * @openapi
+ * /deliveries/{id}/receipts:
+ *   get:
+ *     tags: [Files]
+ *     summary: Lista los comprobantes de una entrega
+ *     description: Devuelve los metadatos de los comprobantes cargados.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID de la entrega
+ *         schema:
+ *           type: string
+ *         example: 6710f3a1c2a4b5d6e7f80901
+ *     responses:
+ *       200:
+ *         description: Lista de archivos asociados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FilesResponse'
+ *       400:
+ *         description: El ID recibido no es valido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Entrega no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post('/:id/receipts', uploadReceipt, filesController.uploadDeliveryReceipt);
+router.get('/:id/receipts', filesController.getDeliveryReceipts);
 
 export default router;

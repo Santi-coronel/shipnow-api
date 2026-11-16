@@ -27,6 +27,11 @@ class DeliveriesRepository {
   async insertMany(deliveriesData) {
     return Delivery.insertMany(deliveriesData);
   }
+
+  async addReceipt(id, fileData) {
+    await Delivery.findByIdAndUpdate(id, { $push: { receipts: fileData } });
+    return this.findById(id);
+  }
 }
 
 export default new DeliveriesRepository();

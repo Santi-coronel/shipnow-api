@@ -84,6 +84,16 @@ describe('Unit: Swagger', () => {
     expect(swaggerSpec.paths).to.have.property('/products/{id}');
   });
 
+  it('documenta los endpoints de carga como multipart/form-data', () => {
+    ['/users/{id}/documents', '/orders/{id}/receipts', '/deliveries/{id}/receipts'].forEach((path) => {
+      const post = swaggerSpec.paths[path].post;
+      expect(post.requestBody.content, path).to.have.property('multipart/form-data');
+      [201, 400, 404, 413, 415].forEach((status) => expect(post.responses, `${path} ${status}`).to.have.property(status));
+      expect(swaggerSpec.paths[path].get.responses, path).to.have.property(404);
+    });
+    expect(swaggerSpec.tags.map((tag) => tag.name)).to.include('Files');
+  });
+
   it('documenta las rutas principales', () => {
     ['/health', '/users', '/orders', '/deliveries', '/mocks/users', '/logger/test'].forEach((path) => {
       expect(swaggerSpec.paths, path).to.have.property(path);

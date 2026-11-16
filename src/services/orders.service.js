@@ -36,6 +36,7 @@ class OrdersService {
 
     const newOrder = await ordersRepo.create({
       ...orderData,
+      receipts: [],
       total,
       status: ORDER_STATUS.CREATED,
       priority: orderData.priority || DELIVERY_PRIORITY.NORMAL,
@@ -51,6 +52,7 @@ class OrdersService {
   }
 
   const updateData = { ...orderData };
+  delete updateData.receipts;
 
   if (Object.prototype.hasOwnProperty.call(updateData, 'items')) {
     if (!Array.isArray(updateData.items) || updateData.items.length === 0) {

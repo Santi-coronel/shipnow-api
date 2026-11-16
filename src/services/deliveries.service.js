@@ -28,6 +28,7 @@ class DeliveriesService {
 
     const newDelivery = await deliveriesRepo.create({
       ...deliveryData,
+      receipts: [],
       status: deliveryData.driver ? DELIVERY_STATUS.ASSIGNED : DELIVERY_STATUS.PENDING,
       assignedAt: deliveryData.driver ? new Date() : null,
     });
@@ -43,6 +44,7 @@ class DeliveriesService {
 
   async update(id, deliveryData) {
     const updateData = { ...deliveryData };
+    delete updateData.receipts;
 
     if (updateData.driver) {
       const driver = await usersRepo.findById(updateData.driver);

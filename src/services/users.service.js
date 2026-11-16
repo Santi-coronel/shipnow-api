@@ -36,6 +36,7 @@ class UsersService {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     const newUser = await usersRepo.create({
       ...userData,
+      documents: [],
       email: normalizedEmail,
       password: hashedPassword,
     });
@@ -55,6 +56,7 @@ class UsersService {
     }
 
     const updateData = { ...userData };
+    delete updateData.documents; // los documentos solo se cargan por el endpoint de archivos
 
     if (updateData.password) {
       updateData.password = await bcrypt.hash(updateData.password, 10);

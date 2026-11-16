@@ -27,6 +27,11 @@ class OrdersRepository {
   async insertMany(ordersData) {
     return Order.insertMany(ordersData);
   }
+
+  async addReceipt(id, fileData) {
+    await Order.findByIdAndUpdate(id, { $push: { receipts: fileData } });
+    return this.findById(id);
+  }
 }
 
 export default new OrdersRepository();

@@ -2,10 +2,12 @@ import mongoose from 'mongoose';
 import app from './app.js';
 import config from './config/index.js';
 import logger from './utils/logger.js';
+import { ensureUploadFolders } from './config/upload.js';
 
 async function startServer() {
   try {
     await mongoose.connect(config.mongoUri);
+    ensureUploadFolders();
     logger.info(`Conexion a MongoDB establecida (entorno: ${config.nodeEnv})`);
 
     app.listen(config.port, () => {

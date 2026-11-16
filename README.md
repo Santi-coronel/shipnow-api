@@ -54,6 +54,7 @@ Configurá como mínimo `MONGODB_URI` dentro de `.env`.
 | `PORT` | No | Puerto HTTP. El valor por defecto es `8080` |
 | `NODE_ENV` | No | Entorno: `development`, `test` o `production` |
 | `LOG_LEVEL` | No | Nivel mínimo de log |
+| `UPLOADS_DIR` | No | Carpeta donde se guardan los archivos subidos. Por defecto `uploads` |
 
 Ejemplo:
 
@@ -62,6 +63,7 @@ PORT=8080
 MONGODB_URI=mongodb://localhost:27017/shipnow
 NODE_ENV=development
 LOG_LEVEL=debug
+UPLOADS_DIR=uploads
 ```
 
 La API no implementa autenticación, por lo que no requiere tokens ni secretos JWT.
@@ -167,6 +169,50 @@ Gestiona entregas asociadas a pedidos y repartidores.
 | DELETE | `/api/deliveries/{id}` | Elimina una entrega |
 
 Un usuario asignado como repartidor debe tener el rol `driver`.
+
+### Files (carga de archivos)
+
+Se usa Multer con la configuración centralizada en `src/config/upload.js` (los routers solo usan el middleware). Los archivos se guardan en disco y en MongoDB se guardan **solo los metadatos** (nombre original, nombre generado, ruta, tipo, tamaño, tipo de documento y fecha de carga).
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| POST | `/api/users/{id}/documents` | Sube un documento de usuario (`file` + `documentType`) |
+| GET | `/api/users/{id}/documents` | Lista los documentos del usuario |
+| POST | `/api/orders/{id}/receipts` | Sube un comprobante de un pedido (`file`) |
+| GET | `/api/orders/{id}/receipts` | Lista los comprobantes del pedido |
+| POST | `/api/deliveries/{id}/receipts` | Sube un comprobante de una entrega (`file`) |
+| GET | `/api/deliveries/{id}/receipts` | Lista los comprobantes de la entrega |
+
+- **Formato:** `multipart/form-data`, con el archivo en el campo `file`.
+- **Tipos aceptados:** PDF, JPG y PNG (se controla el tipo MIME y la extensión).
+- **Tamaño máximo:** 2 MB.
+- **`documentType` (solo documentos de usuario):** `id_card`, `license` o `invoice`. Los comprobantes se guardan como `proof_of_delivery`.
+- **Carpetas** (dentro de `UPLOADS_DIR`, por defecto `uploads/`): `documents/`, `licenses/` y `receipts/`. Esa carpeta está en `.gitignore`.
+- El nombre del archivo en disco lo genera el servidor, nunca se usa el original.
+- Si la carga falla después de guardar el archivo (tipo de documento inválido, entidad inexistente), el archivo se borra.
+
+| Error | Status | Código |
+| --- | --- | --- |
+| `FileRequired` (falta el archivo) | 400 | 700 |
+| `InvalidFileType` (tipo no permitido) | 415 | 701 |
+| `FileTooLarge` (supera 2 MB) | 413 | 702 |
+| `InvalidFileField` (el campo no es `file`) | 400 | 703 |
+| `InvalidDocumentType` | 400 | 704 |
+| `FileSaveFailed` | 500 | 705 |
+| `UserNotFound` / `OrderNotFound` / `DeliveryNotFound` | 404 | 200 / 300 / 400 |
+
+Ejemplo con curl:
+
+```bash
+curl -X POST http://localhost:8080/api/users/<ID_USUARIO>/documents \
+  -F "documentType=id_card" \
+  -F "file=@./dni.pdf"
+
+curl -X POST http://localhost:8080/api/orders/<ID_PEDIDO>/receipts \
+  -F "file=@./comprobante.png"
+```
+
+También se pueden probar desde Swagger en `/api/docs`, en el tag **Files**.
 
 ### Mocks
 
@@ -334,8 +380,9 @@ Con `NODE_ENV=test` se carga `.env.test` (sin secretos, se sube al repo) en luga
 | `MONGODB_URI` | `mongodb://127.0.0.1:27017/shipnow-test` |
 | `NODE_ENV` | `test` |
 | `LOG_LEVEL` | `error` |
+| `UPLOADS_DIR` | `uploads-test` |
 
-El logger queda en silencio durante los tests.
+El logger queda en silencio durante los tests. Los archivos que suben los tests van a `uploads-test/` (ignorada por Git) y se borran al terminar.
 
 ### Qué cubren
 
@@ -346,6 +393,7 @@ Los tests están en `tests/`, agrupados por recurso:
 - `tests/functional/orders.test.js`: GET, POST, GET por id, cambios de estado, recálculo del total y DELETE.
 - `tests/functional/deliveries.test.js`: CRUD de entregas, repartidor válido e inválido.
 - `tests/functional/mocks.test.js`: endpoints GET y de seed, cantidades inválidas, dependencias faltantes.
+- `tests/functional/files.test.js`: carga de documentos y comprobantes (éxito, archivo faltante, tipo no permitido, tamaño excedido, campo incorrecto, tipo de documento inválido, entidad inexistente) y listado.
 - `tests/functional/system.test.js`: health, `/api/logger/test`, Swagger en `/api/docs`, ruta inexistente y JSON inválido.
 - `tests/unit/units.test.js`: constantes, errores, mocks y estructura del spec de Swagger.
 

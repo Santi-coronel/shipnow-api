@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import config from '../../src/config/index.js';
+import { clearUploads } from '../helpers/uploads.js';
 
 before(async () => {
   await mongoose.connect(config.mongoUri);
@@ -13,5 +14,6 @@ before(async () => {
 
 after(async () => {
   await mongoose.connection.dropDatabase();
+  await clearUploads();
   await mongoose.disconnect();
 });

@@ -35,6 +35,11 @@ class UsersRepository {
   async insertMany(usersData) {
     return User.insertMany(usersData);
   }
+
+  async addDocument(id, fileData) {
+    await User.findByIdAndUpdate(id, { $push: { documents: fileData } });
+    return this.findById(id);
+  }
 }
 
 export default new UsersRepository();

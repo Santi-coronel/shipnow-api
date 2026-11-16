@@ -27,6 +27,13 @@ export const EErrors = Object.freeze({
   INVALID_QUANTITY: 600,
   MOCK_SEED_FAILED: 601,
   MOCK_DEPENDENCY_MISSING: 602,
+
+  FILE_REQUIRED: 700,
+  INVALID_FILE_TYPE: 701,
+  FILE_TOO_LARGE: 702,
+  INVALID_FILE_FIELD: 703,
+  INVALID_DOCUMENT_TYPE: 704,
+  FILE_SAVE_FAILED: 705,
 });
 
 export const ErrorDictionary = Object.freeze({
@@ -58,6 +65,13 @@ export const ErrorDictionary = Object.freeze({
   INVALID_QUANTITY: { name: 'InvalidQuantity', code: EErrors.INVALID_QUANTITY, status: 400, message: 'La cantidad (qty) debe ser un numero entero positivo dentro del rango permitido' },
   MOCK_SEED_FAILED: { name: 'MockSeedFailed', code: EErrors.MOCK_SEED_FAILED, status: 500, message: 'Fallo la carga de datos de prueba en MongoDB' },
   MOCK_DEPENDENCY_MISSING: { name: 'MockDependencyMissing', code: EErrors.MOCK_DEPENDENCY_MISSING, status: 400, message: 'Faltan datos previos para generar este mock' },
+
+  FILE_REQUIRED: { name: 'FileRequired', code: EErrors.FILE_REQUIRED, status: 400, message: 'Hay que enviar un archivo en el campo "file"' },
+  INVALID_FILE_TYPE: { name: 'InvalidFileType', code: EErrors.INVALID_FILE_TYPE, status: 415, message: 'Tipo de archivo no permitido. Solo se aceptan PDF, JPG y PNG' },
+  FILE_TOO_LARGE: { name: 'FileTooLarge', code: EErrors.FILE_TOO_LARGE, status: 413, message: 'El archivo supera el tamaño maximo permitido (2 MB)' },
+  INVALID_FILE_FIELD: { name: 'InvalidFileField', code: EErrors.INVALID_FILE_FIELD, status: 400, message: 'El archivo debe enviarse en el campo "file"' },
+  INVALID_DOCUMENT_TYPE: { name: 'InvalidDocumentType', code: EErrors.INVALID_DOCUMENT_TYPE, status: 400, message: 'Tipo de documento invalido. Valores permitidos: id_card, license, invoice' },
+  FILE_SAVE_FAILED: { name: 'FileSaveFailed', code: EErrors.FILE_SAVE_FAILED, status: 500, message: 'No se pudo guardar el archivo en el servidor' },
 });
 
 export const createError = ({ name, code, status, message, cause }) => {

@@ -38,6 +38,7 @@ export const DELIVERY_PRIORITY = Object.freeze({
 
 export const DOCUMENT_TYPES = Object.freeze({
   ID_CARD: 'id_card',
+  LICENSE: 'license',
   INVOICE: 'invoice',
   PROOF_OF_DELIVERY: 'proof_of_delivery',
 });
@@ -58,4 +59,21 @@ export const LOG_LEVELS = Object.freeze({
   WARNING: 'warning',
   ERROR: 'error',
   FATAL: 'fatal',
+});
+
+// Carga de archivos (Pre-entrega 7).
+export const UPLOAD_PARAMETERS = Object.freeze({
+  FIELD_NAME: 'file',
+  MAX_FILE_SIZE: 2 * 1024 * 1024, // 2 MB
+  ALLOWED_TYPES: Object.freeze({
+    'application/pdf': ['.pdf'],
+    'image/jpeg': ['.jpg', '.jpeg'],
+    'image/png': ['.png'],
+  }),
+  // Carpetas dentro del directorio de uploads
+  FOLDERS: Object.freeze({
+    DOCUMENTS: 'documents',
+    LICENSES: 'licenses',
+    RECEIPTS: 'receipts',
+  }),
 });

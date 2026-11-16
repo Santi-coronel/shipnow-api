@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import fileSchema from './file.schema.js';
 import { DELIVERY_STATUS, DELIVERY_PRIORITY } from '../constants/index.js';
 
 const deliverySchema = new mongoose.Schema(
@@ -9,6 +10,7 @@ const deliverySchema = new mongoose.Schema(
     priority: { type: String, enum: Object.values(DELIVERY_PRIORITY), default: DELIVERY_PRIORITY.NORMAL },
     assignedAt: { type: Date, default: null },
     deliveredAt: { type: Date, default: null },
+    receipts: { type: [fileSchema], default: [] },
   },
   { timestamps: true }
 );
