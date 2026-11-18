@@ -1,8 +1,17 @@
+import { PAGINATION } from '../constants/index.js';
 import User from '../models/user.model.js';
 
 class UsersRepository {
-  async findAll(filter = {}) {
-    return User.find(filter).select('-password');
+  async findAll(filter = {}, { skip = 0, limit = PAGINATION.MAX_LIMIT } = {}) {
+    return User.find(filter).select('-password')
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+  }
+
+  async count(filter = {}) {
+    return User.countDocuments(filter);
   }
 
   async findById(id) {

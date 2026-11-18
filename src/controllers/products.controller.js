@@ -4,8 +4,8 @@ class ProductsController {
   async findAll(req, res, next) {
     try {
       const includeOutOfStock = req.query.includeOutOfStock === 'true';
-      const products = await productsService.findAll({ includeOutOfStock });
-      res.json({ status: 'success', payload: products });
+      const { items, pagination } = await productsService.findAll({ ...req.query, includeOutOfStock });
+      res.json({ status: 'success', payload: items, pagination });
     } catch (error) {
       next(error);
     }

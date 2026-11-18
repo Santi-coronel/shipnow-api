@@ -31,7 +31,7 @@ class MocksService {
 
   async getOrders(qty) {
     const parsedQty = parseQty(qty);
-    const existingCustomers = await usersRepo.findAll();
+    const existingCustomers = await usersRepo.findAll({}, { limit: MOCKING_PARAMETERS.SOURCE_LIMIT });
     if (existingCustomers.length === 0) {
       throw createError({
         ...ErrorDictionary.MOCK_DEPENDENCY_MISSING,
@@ -43,8 +43,8 @@ class MocksService {
 
   async getDeliveries(qty) {
     const parsedQty = parseQty(qty);
-    const existingOrders = await ordersRepo.findAll();
-    const existingUsers = await usersRepo.findAll();
+    const existingOrders = await ordersRepo.findAll({}, { limit: MOCKING_PARAMETERS.SOURCE_LIMIT });
+    const existingUsers = await usersRepo.findAll({}, { limit: MOCKING_PARAMETERS.SOURCE_LIMIT });
     if (existingOrders.length === 0) {
       throw createError({
         ...ErrorDictionary.MOCK_DEPENDENCY_MISSING,

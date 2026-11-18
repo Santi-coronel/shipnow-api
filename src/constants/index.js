@@ -44,6 +44,7 @@ export const MOCKING_PARAMETERS = Object.freeze({
   MAX_QTY: 100,
   MIN_QTY: 1,
   DEFAULT_PASSWORD: 'Coderhouse123',
+  SOURCE_LIMIT: 100, // maximo de registros que se leen para relacionar mocks
 });
 
 export const LOG_LEVELS = Object.freeze({
@@ -68,4 +69,16 @@ export const UPLOAD_PARAMETERS = Object.freeze({
     LICENSES: 'licenses',
     RECEIPTS: 'receipts',
   }),
+});
+
+export const PAGINATION = Object.freeze({
+  DEFAULT_PAGE: 1,
+  DEFAULT_LIMIT: 10,
+  MAX_LIMIT: 100,
+});
+
+export const ENVIRONMENTS = Object.freeze({
+  DEVELOPMENT: 'development',
+  TEST: 'test',
+  PRODUCTION: 'production',
 });

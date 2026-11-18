@@ -11,7 +11,29 @@ const router = Router();
  *   get:
  *     tags: [Deliveries]
  *     summary: Lista todas las entregas
- *     description: Devuelve las entregas con sus pedidos y repartidores asociados.
+ *     description: Devuelve las entregas paginadas (10 por pagina por defecto, maximo 100), de la mas nueva a la mas vieja.
+ *     parameters:
+ *       - $ref: '#/components/parameters/PageParam'
+ *       - $ref: '#/components/parameters/LimitParam'
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         description: Filtra por estado
+ *         schema:
+ *           type: string
+ *           enum: [pending, assigned, in_transit, delivered]
+ *       - in: query
+ *         name: driver
+ *         required: false
+ *         description: Filtra por ID del repartidor
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: order
+ *         required: false
+ *         description: Filtra por ID del pedido
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Lista de entregas obtenida correctamente
@@ -19,6 +41,12 @@ const router = Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/DeliveriesResponse'
+ *       400:
+ *         description: page o limit invalidos (InvalidPagination, 105), estado invalido (InvalidDeliveryStatus, 401) o ID invalido (InvalidId, 102)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Error interno del servidor
  *         content:

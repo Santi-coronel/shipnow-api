@@ -11,7 +11,23 @@ const router = Router();
  *   get:
  *     tags: [Users]
  *     summary: Lista todos los usuarios
- *     description: Devuelve todos los usuarios sin incluir sus contraseñas.
+ *     description: Devuelve los usuarios paginados (10 por pagina por defecto, maximo 100), sin incluir sus contraseñas.
+ *     parameters:
+ *       - $ref: '#/components/parameters/PageParam'
+ *       - $ref: '#/components/parameters/LimitParam'
+ *       - in: query
+ *         name: role
+ *         required: false
+ *         description: Filtra por rol
+ *         schema:
+ *           type: string
+ *           enum: [admin, customer, driver, store]
+ *       - in: query
+ *         name: isAvailable
+ *         required: false
+ *         description: Filtra por disponibilidad
+ *         schema:
+ *           type: boolean
  *     responses:
  *       200:
  *         description: Lista de usuarios obtenida correctamente
@@ -19,6 +35,12 @@ const router = Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UsersResponse'
+ *       400:
+ *         description: page o limit invalidos (InvalidPagination, 105) o filtro invalido (InvalidRole, 203)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Error interno del servidor
  *         content:

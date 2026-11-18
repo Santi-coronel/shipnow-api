@@ -10,7 +10,10 @@ describe('Sistema: health, logger, Swagger y errores globales', () => {
       const res = await request(app).get('/api/health');
 
       expect(res.status).to.equal(200);
-      expect(res.body).to.deep.equal({ status: 'success', message: 'ShipNow API funcionando correctamente' });
+      expect(res.body).to.have.all.keys('status', 'message', 'environment', 'uptime', 'timestamp', 'database');
+      expect(res.body).to.include({ status: 'success', environment: 'test', database: 'connected' });
+      expect(res.body.uptime).to.be.a('number').that.is.at.least(0);
+      expect(new Date(res.body.timestamp).toISOString()).to.equal(res.body.timestamp);
     });
   });
 
@@ -48,6 +51,12 @@ describe('Sistema: health, logger, Swagger y errores globales', () => {
         .send('{"firstName": ');
 
       expectError(res, 400, ErrorDictionary.INVALID_JSON);
+    });
+
+    it('responde 413 si el body es demasiado grande', async () => {
+      const res = await request(app).post('/api/users').send({ firstName: 'x'.repeat(200 * 1024) });
+
+      expectError(res, 413, ErrorDictionary.PAYLOAD_TOO_LARGE);
     });
 
     it('cada error del diccionario tiene un codigo unico del enum', () => {

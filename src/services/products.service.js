@@ -1,6 +1,7 @@
 import productsRepo from '../repositories/products.repo.js';
 import { PRODUCT_STATUS } from '../constants/index.js';
 import { createError, ErrorDictionary } from '../utils/errors.js';
+import { parsePagination, buildPagination } from '../utils/pagination.js';
 import logger from '../utils/logger.js';
 
 const isValidPrice = (price) => typeof price === 'number' && Number.isFinite(price) && price >= 0;
@@ -8,9 +9,12 @@ const isValidStock = (stock) => Number.isInteger(stock) && stock >= 0;
 const statusFromStock = (stock) => (stock > 0 ? PRODUCT_STATUS.AVAILABLE : PRODUCT_STATUS.OUT_OF_STOCK);
 
 class ProductsService {
-  async findAll({ includeOutOfStock = false } = {}) {
+  async findAll({ includeOutOfStock = false, ...query } = {}) {
+    const pageParams = parsePagination(query);
     const filter = includeOutOfStock ? {} : { status: PRODUCT_STATUS.AVAILABLE };
-    return productsRepo.findAll(filter);
+
+    const [items, total] = await Promise.all([productsRepo.findAll(filter, pageParams), productsRepo.count(filter)]);
+    return { items, pagination: buildPagination(pageParams, total) };
   }
 
   async findById(id) {

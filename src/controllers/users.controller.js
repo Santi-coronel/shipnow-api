@@ -3,8 +3,8 @@ import usersService from '../services/users.service.js';
 class UsersController {
   async findAll(req, res, next) {
     try {
-      const users = await usersService.findAll();
-      res.json({ status: 'success', payload: users });
+      const { items, pagination } = await usersService.findAll(req.query);
+      res.json({ status: 'success', payload: items, pagination });
     } catch (error) {
       next(error);
     }

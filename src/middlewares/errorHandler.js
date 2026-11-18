@@ -8,6 +8,8 @@ export const errorHandler = (err, req, res, next) => {
     error = createError(ErrorDictionary.INVALID_ID);
   } else if (err.type === 'entity.parse.failed') {
     error = createError(ErrorDictionary.INVALID_JSON);
+  } else if (err.type === 'entity.too.large') {
+    error = createError(ErrorDictionary.PAYLOAD_TOO_LARGE);
   } else if (err.name === 'ValidationError' && !err.status) {
     error = createError({ ...ErrorDictionary.VALIDATION_ERROR, message: err.message });
   }

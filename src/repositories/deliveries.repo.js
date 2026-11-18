@@ -1,8 +1,17 @@
+import { PAGINATION } from '../constants/index.js';
 import Delivery from '../models/delivery.model.js';
 
 class DeliveriesRepository {
-  async findAll(filter = {}) {
-    return Delivery.find(filter).populate('order').populate('driver', 'firstName lastName email role');
+  async findAll(filter = {}, { skip = 0, limit = PAGINATION.MAX_LIMIT } = {}) {
+    return Delivery.find(filter).populate('order').populate('driver', 'firstName lastName email role')
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+  }
+
+  async count(filter = {}) {
+    return Delivery.countDocuments(filter);
   }
 
   async findById(id) {

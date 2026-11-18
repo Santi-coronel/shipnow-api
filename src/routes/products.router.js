@@ -9,7 +9,7 @@ const router = Router();
  *   get:
  *     tags: [Products]
  *     summary: Lista los productos disponibles
- *     description: Por defecto no incluye los productos sin stock.
+ *     description: Devuelve los productos paginados. Por defecto no incluye los productos sin stock.
  *     parameters:
  *       - in: query
  *         name: includeOutOfStock
@@ -18,6 +18,8 @@ const router = Router();
  *         schema:
  *           type: boolean
  *           default: false
+ *       - $ref: '#/components/parameters/PageParam'
+ *       - $ref: '#/components/parameters/LimitParam'
  *     responses:
  *       200:
  *         description: Lista de productos obtenida correctamente
@@ -25,6 +27,12 @@ const router = Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProductsResponse'
+ *       400:
+ *         description: page o limit invalidos (InvalidPagination, 105)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Error interno del servidor
  *         content:

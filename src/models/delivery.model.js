@@ -15,6 +15,10 @@ const deliverySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+deliverySchema.index({ status: 1, createdAt: -1 });
+deliverySchema.index({ driver: 1 });
+deliverySchema.index({ order: 1 });
+
 const Delivery = mongoose.model('Delivery', deliverySchema);
 
 export default Delivery;

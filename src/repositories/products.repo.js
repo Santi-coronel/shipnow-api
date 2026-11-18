@@ -1,8 +1,17 @@
+import { PAGINATION } from '../constants/index.js';
 import Product from '../models/product.model.js';
 
 class ProductsRepository {
-  async findAll(filter = {}) {
-    return Product.find(filter).sort({ createdAt: -1 });
+  async findAll(filter = {}, { skip = 0, limit = PAGINATION.MAX_LIMIT } = {}) {
+    return Product.find(filter)
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+  }
+
+  async count(filter = {}) {
+    return Product.countDocuments(filter);
   }
 
   async findById(id) {

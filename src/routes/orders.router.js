@@ -11,7 +11,23 @@ const router = Router();
  *   get:
  *     tags: [Orders]
  *     summary: Lista todos los pedidos
- *     description: Devuelve todos los pedidos con los datos principales del cliente.
+ *     description: Devuelve los pedidos paginados (10 por pagina por defecto, maximo 100), del mas nuevo al mas viejo.
+ *     parameters:
+ *       - $ref: '#/components/parameters/PageParam'
+ *       - $ref: '#/components/parameters/LimitParam'
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         description: Filtra por estado
+ *         schema:
+ *           type: string
+ *           enum: [created, assigned, picked_up, in_transit, delivered, cancelled]
+ *       - in: query
+ *         name: customer
+ *         required: false
+ *         description: Filtra por ID del cliente
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Lista de pedidos obtenida correctamente
@@ -19,6 +35,12 @@ const router = Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/OrdersResponse'
+ *       400:
+ *         description: page o limit invalidos (InvalidPagination, 105), estado invalido (InvalidOrderStatus, 301) o ID invalido (InvalidId, 102)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Error interno del servidor
  *         content:

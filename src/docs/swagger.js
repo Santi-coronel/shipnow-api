@@ -6,7 +6,7 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'ShipNow API',
-      version: '7.0.0',
+      version: '8.0.0',
       description:
         'API de logistica para gestionar usuarios, pedidos y entregas. ' +
         'Construida con Node.js, Express y MongoDB, utilizando una arquitectura ' +
@@ -14,8 +14,8 @@ const options = {
     },
     servers: [
       {
-        url: `http://localhost:${config.port}/api`,
-        description: 'Servidor local',
+        url: `${config.publicUrl}/api`,
+        description: 'Servidor de la API',
       },
     ],
     tags: [
@@ -54,6 +54,22 @@ const options = {
       },
     ],
     components: {
+      parameters: {
+        PageParam: {
+          in: 'query',
+          name: 'page',
+          required: false,
+          description: 'Numero de pagina (empieza en 1)',
+          schema: { type: 'integer', minimum: 1, default: 1 },
+        },
+        LimitParam: {
+          in: 'query',
+          name: 'limit',
+          required: false,
+          description: 'Resultados por pagina (maximo 100)',
+          schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+        },
+      },
       schemas: {
         User: {
           type: 'object',
@@ -370,6 +386,7 @@ const options = {
             {
               type: 'object',
               properties: {
+                pagination: { $ref: '#/components/schemas/Pagination' },
                 payload: {
                   type: 'array',
                   items: { $ref: '#/components/schemas/Product' },
@@ -728,6 +745,32 @@ const options = {
           ],
         },
 
+        Pagination: {
+          type: 'object',
+          required: ['page', 'limit', 'total', 'totalPages', 'hasNextPage', 'hasPrevPage'],
+          properties: {
+            page: { type: 'integer', example: 1, description: 'Pagina actual' },
+            limit: { type: 'integer', example: 10, description: 'Resultados por pagina' },
+            total: { type: 'integer', example: 42, description: 'Total de resultados que cumplen el filtro' },
+            totalPages: { type: 'integer', example: 5 },
+            hasNextPage: { type: 'boolean', example: true },
+            hasPrevPage: { type: 'boolean', example: false },
+          },
+        },
+
+        HealthResponse: {
+          type: 'object',
+          required: ['status', 'message', 'environment', 'uptime', 'timestamp', 'database'],
+          properties: {
+            status: { type: 'string', example: 'success' },
+            message: { type: 'string', example: 'ShipNow API funcionando correctamente' },
+            environment: { type: 'string', enum: ['development', 'test', 'production'], example: 'production' },
+            uptime: { type: 'integer', example: 3600, description: 'Segundos desde que arranco el proceso' },
+            timestamp: { type: 'string', format: 'date-time', example: '2026-11-18T21:30:00.000Z' },
+            database: { type: 'string', enum: ['connected', 'disconnected'], example: 'connected' },
+          },
+        },
+
         SuccessResponse: {
           type: 'object',
           required: ['status', 'payload'],
@@ -814,6 +857,7 @@ const options = {
             {
               type: 'object',
               properties: {
+                pagination: { $ref: '#/components/schemas/Pagination' },
                 payload: {
                   type: 'array',
                   items: {
@@ -849,6 +893,7 @@ const options = {
             {
               type: 'object',
               properties: {
+                pagination: { $ref: '#/components/schemas/Pagination' },
                 payload: {
                   type: 'array',
                   items: {
@@ -884,6 +929,7 @@ const options = {
             {
               type: 'object',
               properties: {
+                pagination: { $ref: '#/components/schemas/Pagination' },
                 payload: {
                   type: 'array',
                   items: {

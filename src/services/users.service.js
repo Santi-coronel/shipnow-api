@@ -2,11 +2,21 @@ import bcrypt from 'bcrypt';
 import usersRepo from '../repositories/users.repo.js';
 import { USER_ROLES } from '../constants/index.js';
 import { createError, ErrorDictionary } from '../utils/errors.js';
+import { parsePagination, buildPagination, pickEnumFilter, pickBooleanFilter } from '../utils/pagination.js';
 import logger from '../utils/logger.js';
 
 class UsersService {
-  async findAll() {
-    return usersRepo.findAll();
+  async findAll(query = {}) {
+    const pageParams = parsePagination(query);
+    const filter = {};
+
+    const role = pickEnumFilter(query.role, Object.values(USER_ROLES), ErrorDictionary.INVALID_ROLE);
+    if (role) filter.role = role;
+    const isAvailable = pickBooleanFilter(query.isAvailable);
+    if (isAvailable !== undefined) filter.isAvailable = isAvailable;
+
+    const [items, total] = await Promise.all([usersRepo.findAll(filter, pageParams), usersRepo.count(filter)]);
+    return { items, pagination: buildPagination(pageParams, total) };
   }
 
   async findById(id) {

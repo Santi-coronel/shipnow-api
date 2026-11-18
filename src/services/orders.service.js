@@ -3,11 +3,21 @@ import usersRepo from '../repositories/users.repo.js';
 import deliveriesRepo from '../repositories/deliveries.repo.js';
 import { ORDER_STATUS, DELIVERY_PRIORITY } from '../constants/index.js';
 import { createError, ErrorDictionary } from '../utils/errors.js';
+import { parsePagination, buildPagination, pickEnumFilter, pickIdFilter } from '../utils/pagination.js';
 import logger from '../utils/logger.js';
 
 class OrdersService {
-  async findAll(filter = {}) {
-    return ordersRepo.findAll(filter);
+  async findAll(query = {}) {
+    const pageParams = parsePagination(query);
+    const filter = {};
+
+    const status = pickEnumFilter(query.status, Object.values(ORDER_STATUS), ErrorDictionary.INVALID_ORDER_STATUS);
+    if (status) filter.status = status;
+    const customer = pickIdFilter(query.customer);
+    if (customer) filter.customer = customer;
+
+    const [items, total] = await Promise.all([ordersRepo.findAll(filter, pageParams), ordersRepo.count(filter)]);
+    return { items, pagination: buildPagination(pageParams, total) };
   }
 
   async findById(id) {

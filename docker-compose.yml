@@ -1,0 +1,28 @@
+# API + MongoDB para probar todo con un solo comando: docker compose up --build
+services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      MONGODB_URI: mongodb://mongo:27017/shipnow
+      LOG_LEVEL: info
+      ENABLE_DOCS: "true"
+      UPLOADS_DIR: /app/uploads
+    depends_on:
+      - mongo
+    volumes:
+      - uploads-data:/app/uploads
+      - logs-data:/app/logs
+
+volumes:
+  mongo-data:
+  uploads-data:
+  logs-data:

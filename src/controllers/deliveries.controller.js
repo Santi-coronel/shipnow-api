@@ -3,8 +3,8 @@ import deliveriesService from '../services/deliveries.service.js';
 class DeliveriesController {
   async findAll(req, res, next) {
     try {
-      const deliveries = await deliveriesService.findAll();
-      res.json({ status: 'success', payload: deliveries });
+      const { items, pagination } = await deliveriesService.findAll(req.query);
+      res.json({ status: 'success', payload: items, pagination });
     } catch (error) {
       next(error);
     }

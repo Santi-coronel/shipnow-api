@@ -4,6 +4,9 @@ export const EErrors = Object.freeze({
   INVALID_ID: 102,
   INVALID_JSON: 103,
   VALIDATION_ERROR: 104,
+  INVALID_PAGINATION: 105,
+  INVALID_FILTER: 106,
+  PAYLOAD_TOO_LARGE: 107,
 
   USER_NOT_FOUND: 200,
   USER_ALREADY_EXISTS: 201,
@@ -42,6 +45,9 @@ export const ErrorDictionary = Object.freeze({
   INVALID_ID: { name: 'InvalidId', code: EErrors.INVALID_ID, status: 400, message: 'El ID recibido no es valido' },
   INVALID_JSON: { name: 'InvalidJson', code: EErrors.INVALID_JSON, status: 400, message: 'El cuerpo de la peticion no es un JSON valido' },
   VALIDATION_ERROR: { name: 'ValidationError', code: EErrors.VALIDATION_ERROR, status: 400, message: 'Los datos enviados no son validos' },
+  INVALID_PAGINATION: { name: 'InvalidPagination', code: EErrors.INVALID_PAGINATION, status: 400, message: 'page y limit deben ser enteros positivos (limit maximo: 100)' },
+  INVALID_FILTER: { name: 'InvalidFilter', code: EErrors.INVALID_FILTER, status: 400, message: 'Alguno de los filtros enviados no es valido' },
+  PAYLOAD_TOO_LARGE: { name: 'PayloadTooLarge', code: EErrors.PAYLOAD_TOO_LARGE, status: 413, message: 'El cuerpo de la peticion es demasiado grande' },
 
   USER_NOT_FOUND: { name: 'UserNotFound', code: EErrors.USER_NOT_FOUND, status: 404, message: 'Usuario no encontrado' },
   USER_ALREADY_EXISTS: { name: 'UserAlreadyExists', code: EErrors.USER_ALREADY_EXISTS, status: 409, message: 'Ya existe un usuario con ese email' },
